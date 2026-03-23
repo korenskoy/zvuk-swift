@@ -22,7 +22,7 @@ Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/trudenboy/zvuk-swift.git", from: "0.1.0"),
+    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.1.0"),
 ]
 ```
 
