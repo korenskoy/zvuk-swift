@@ -1,0 +1,135 @@
+query getPaginatedCollectionAll($limit: Int = 30, $limitTracksOnPlaylist: Int = 3, $after: String = null, $withPlaylists: Boolean = false, $withReleases: Boolean = false, $withArtists: Boolean = false, $withPodcasts: Boolean = false, $withBooks: Boolean = false, $withEpisodes: Boolean = false) {
+  paginatedCollection(collectionSubtype: all) {
+    playlists(pagination: {first: $limit, after: $after}) @include(if: $withPlaylists) {
+      items {
+        id
+        title
+        description
+        image {
+          src
+          picUrlBig
+        }
+        profile {
+          id
+        }
+        coverV1 {
+          src
+        }
+        tracks(limit: $limitTracksOnPlaylist) {
+          id
+          release {
+            id
+            image {
+              src
+            }
+          }
+        }
+        trackCount
+        __typename
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+    releases(pagination: {first: $limit, after: $after}) @include(if: $withReleases) {
+      items {
+        id
+        title
+        type
+        mark
+        image {
+          src
+        }
+        artists {
+          id
+          title
+        }
+        explicit
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+    artists(pagination: {first: $limit, after: $after}) @include(if: $withArtists) {
+      items {
+        id
+        title
+        image {
+          src
+          palette
+        }
+        mark
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+    podcasts(pagination: {first: $limit, after: $after}) @include(if: $withPodcasts) {
+      items {
+        id
+        title
+        updatedDate
+        explicit
+        mark
+        image {
+          src
+        }
+        authors {
+          id
+          name
+        }
+        episodes(limit: 1) {
+          publicationDate
+        }
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+    episodes(pagination: {first: $limit, after: $after}) @include(if: $withEpisodes) {
+      items {
+        id
+        title
+        explicit
+        mark
+        image {
+          src
+        }
+        podcast {
+          updatedDate
+          authors {
+            name
+          }
+        }
+        publicationDate
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+    books(pagination: {first: $limit, after: $after}) @include(if: $withBooks) {
+      items {
+        bookAuthors {
+          id
+          rname
+        }
+        id
+        title
+        image {
+          src
+        }
+        mark
+        explicit
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}

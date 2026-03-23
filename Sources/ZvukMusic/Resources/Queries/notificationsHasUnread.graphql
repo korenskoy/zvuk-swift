@@ -1,0 +1,8 @@
+# vars
+# {}
+
+query notificationsHasUnread {
+  notification {
+    hasUnread(availableTypes: [NEW_RELEASE, NEW_PODCAST_EPISODE, NEW_BOOK, NEW_PROFILE_PLAYLIST, PLAYLIST_TRACKS_ADDED, PLAYLIST_LIKED])
+  }
+}

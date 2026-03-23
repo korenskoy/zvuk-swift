@@ -1,0 +1,7 @@
+mutation addItemToCollection($id: ID, $type: CollectionItemType) {
+  collection {
+    addItemV1(id: $id, type: $type) {
+      collectionSubtype
+    }
+  }
+}

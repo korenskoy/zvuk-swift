@@ -1,0 +1,179 @@
+# vars
+# {"limit": 15, "cursor": "", "availableTypes": ["NEW_RELEASE", "NEW_PODCAST_EPISODE", "NEW_BOOK", "NEW_PROFILE_PLAYLIST", "PLAYLIST_TRACKS_ADDED", "PLAYLIST_LIKED"]}
+
+query getNotification($availableTypes: [NotificationTypes!], $cursor: String = null, $limit: Int = 30) {
+  notification {
+    paginatedNotificationsFeed(
+      limit: $limit
+      cursor: $cursor
+      availableTypes: $availableTypes
+    ) {
+      pageInfo {
+        cursor
+        hasNextPage
+      }
+      notifications {
+        createdAt
+        body {
+          __typename
+          ... on NewRelease {
+            author {
+              id
+              title
+              image {
+                src
+              }
+              mark
+            }
+            release {
+              id
+              title
+              type
+              artists {
+                id
+                title
+                image {
+                  src
+                }
+              }
+              mark
+              childParam
+              explicit
+              image {
+                src
+              }
+            }
+          }
+          ... on NewPodcastEpisode {
+            episode {
+              id
+              title
+              duration
+              publicationDate
+              trackId
+              explicit
+              mark
+              childParam
+              image {
+                src
+              }
+              podcast {
+                id
+                title
+                image {
+                  src
+                }
+                mark
+              }
+            }
+          }
+          ... on NewBook {
+            author {
+              id
+              rname
+              image {
+                src
+              }
+              mark
+            }
+            book {
+              id
+              title
+              mark
+              explicit
+              image {
+                src
+              }
+              bookAuthors {
+                id
+                rname
+                image {
+                  src
+                }
+                mark
+              }
+            }
+          }
+          ... on NewProfilePlaylist {
+            author {
+              __typename
+              id
+              name
+              image {
+                src
+              }
+            }
+            playlist {
+              id
+              title
+              trackCount
+              tracks(limit: 3) {
+                release {
+                  title
+                  image {
+                    src
+                  }
+                }
+              }
+            }
+          }
+          ... on PlaylistTracksAdded {
+            author {
+              __typename
+              id
+              name
+              image {
+                src
+              }
+            }
+            playlist {
+              __typename
+              id
+              title
+              coverV1 {
+                src
+              }
+              image {
+                picUrlBig
+                src
+              }
+              trackCount
+              tracks(limit: 3) {
+                release {
+                  title
+                  image {
+                    src
+                  }
+                }
+              }
+            }
+            addedTracksCount
+          }
+          ... on PlaylistLiked {
+            author {
+              __typename
+              id
+              name
+              image {
+                src
+              }
+            }
+            playlist {
+              id
+              title
+              trackCount
+              tracks(limit: 3) {
+                release {
+                  title
+                  image {
+                    src
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

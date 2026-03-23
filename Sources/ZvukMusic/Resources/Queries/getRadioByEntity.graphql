@@ -1,0 +1,44 @@
+query getRadioByEntity(
+  $id: ID!
+  $type: RecommenderRadioEntityType!
+  $limit: NonNegativeInt! = 25
+  $cursor: NonNegativeInt = 0
+) {
+  recommenderRadio(
+    onEntity: { id: $id, type: $type }
+    first: $limit
+    cursor: $cursor
+  ) {
+    cursor
+    tracks {
+      id
+      title
+      lyrics
+      hasFlac
+      duration
+      explicit
+      availability
+      artistTemplate
+      childParam
+      mark
+      artists {
+        id
+        title
+        image {
+          src
+          palette
+        }
+        mark
+      }
+      release {
+        id
+        title
+        image {
+          src
+          palette
+        }
+      }
+      zchan
+    }
+  }
+}
