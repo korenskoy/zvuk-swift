@@ -468,6 +468,7 @@ let client = ZvukClient(
 | `getFollowingCount(_:)` | Количество подписок |
 | `hasUnreadNotifications()` | Непрочитанные уведомления |
 | `getNotifications(types:cursor:limit:)` | Лента уведомлений с пагинацией |
+| `readAllNotifications()` | Отметить все уведомления прочитанными |
 
 **История:**
 

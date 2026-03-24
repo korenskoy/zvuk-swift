@@ -468,6 +468,7 @@ All methods are `async throws`.
 | `getFollowingCount(_:)` | Following count |
 | `hasUnreadNotifications()` | Unread notifications |
 | `getNotifications(types:cursor:limit:)` | Notifications feed with pagination |
+| `readAllNotifications()` | Mark all notifications as read |
 
 **History:**
 

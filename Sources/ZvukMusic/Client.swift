@@ -838,6 +838,13 @@ public final class ZvukClient: Sendable {
         return notification["hasUnread"] as? Bool ?? false
     }
 
+    /// Mark all notifications as read.
+    public func readAllNotifications() async throws {
+        let gql = try GraphQLLoader.loadQuery("readAllNotifications")
+        _ = try await request.graphql(
+            query: gql, operationName: "readAllNotifications", variables: [:])
+    }
+
     /// Get notifications feed with cursor-based pagination.
     /// - Parameters:
     ///   - types: Notification types to fetch. Defaults to all types.
