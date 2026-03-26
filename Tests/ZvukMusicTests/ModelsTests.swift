@@ -541,6 +541,111 @@ struct ModelsTests {
         #expect(RadioEntityType.track.rawValue == "TRACK")
     }
 
+    // MARK: - Grid
+
+    @Test func gridPageDecode() throws {
+        let json = """
+            {
+                "version": "1.0",
+                "sections": [
+                    {
+                        "UUID": "abc-123",
+                        "type": "listing",
+                        "view": "",
+                        "enabled": true,
+                        "header": {"title": "Новые релизы", "icon": "master_folder"},
+                        "content": {"list": "New releases", "count": 10, "random": false},
+                        "data": [
+                            {"type": "release", "id": 123},
+                            {"type": "release", "id": 456}
+                        ]
+                    },
+                    {
+                        "UUID": "def-456",
+                        "type": "content",
+                        "view": "only-tracks",
+                        "enabled": true,
+                        "data": [{"type": "playlist", "id": 1124972}]
+                    }
+                ]
+            }
+            """.data(using: .utf8)!
+
+        let page = try JSONDecoder().decode(GridPage.self, from: json)
+        #expect(page.version == "1.0")
+        #expect(page.sections.count == 2)
+
+        let listing = page.sections[0]
+        #expect(listing.uuid == "abc-123")
+        #expect(listing.type == "listing")
+        #expect(listing.header?.title == "Новые релизы")
+        #expect(listing.header?.icon == "master_folder")
+        #expect(listing.content?.list == "New releases")
+        #expect(listing.content?.count == 10)
+        #expect(listing.content?.random == false)
+        #expect(listing.releaseIds == ["123", "456"])
+        #expect(listing.artistIds.isEmpty)
+
+        let content = page.sections[1]
+        #expect(content.type == "content")
+        #expect(content.view == "only-tracks")
+        #expect(content.playlistIds == ["1124972"])
+    }
+
+    @Test func gridPageHelpers() {
+        let section1 = GridSection(type: "listing", data: [
+            GridContentItem(id: "1", type: "artist"),
+            GridContentItem(id: "2", type: "release"),
+        ])
+        let section2 = GridSection(type: "content", data: [
+            GridContentItem(id: "3", type: "playlist"),
+        ])
+        let page = GridPage(sections: [section1, section2])
+
+        #expect(page.sections(ofType: "listing").count == 1)
+        #expect(page.sections(ofType: "content").count == 1)
+        #expect(page.itemIds(ofType: "artist") == ["1"])
+        #expect(page.itemIds(ofType: "release") == ["2"])
+        #expect(page.itemIds(ofType: "playlist") == ["3"])
+    }
+
+    @Test func gridPageEmpty() throws {
+        let json = "{}".data(using: .utf8)!
+        let page = try JSONDecoder().decode(GridPage.self, from: json)
+        #expect(page.version == "")
+        #expect(page.sections.isEmpty)
+    }
+
+    @Test func gridContentPageDecode() throws {
+        let json = """
+            {
+                "type": "content",
+                "data": [
+                    {"type": "artist", "id": 124994},
+                    {"type": "artist", "id": 486859}
+                ]
+            }
+            """.data(using: .utf8)!
+
+        let page = try JSONDecoder().decode(GridContentPage.self, from: json)
+        #expect(page.type == "content")
+        #expect(page.ids == ["124994", "486859"])
+        #expect(page.data[0].type == "artist")
+    }
+
+    @Test func gridSectionItemFilters() {
+        let section = GridSection(data: [
+            GridContentItem(id: "1", type: "playlist"),
+            GridContentItem(id: "2", type: "release"),
+            GridContentItem(id: "3", type: "playlist"),
+            GridContentItem(id: "4", type: "artist"),
+        ])
+        #expect(section.playlistIds == ["1", "3"])
+        #expect(section.releaseIds == ["2"])
+        #expect(section.artistIds == ["4"])
+        #expect(section.items(ofType: "podcast").isEmpty)
+    }
+
     // MARK: - Codable roundtrip
 
     @Test func enumsCodable() throws {

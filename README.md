@@ -22,7 +22,7 @@ Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.1.0"),
+    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.2.0"),
 ]
 ```
 
@@ -305,6 +305,32 @@ let nextPage = try await client.getRadioByArtist("754367", cursor: radio.cursor)
 let trackRadio = try await client.getRadioByTrack("5896627")
 ```
 
+## Grid (Page Layouts)
+
+```swift
+// Get the full "Popular Music" page layout
+let grid = try await client.getGrid(name: GridName.popularMusic)
+
+for section in grid.sections where section.enabled {
+    print("\(section.header?.title ?? "—") (\(section.data.count) items)")
+
+    // Load playlists from this section
+    if !section.playlistIds.isEmpty {
+        let playlists = try await client.getPlaylists(section.playlistIds)
+    }
+
+    // Load releases
+    if !section.releaseIds.isEmpty {
+        let releases = try await client.getReleases(section.releaseIds)
+    }
+}
+
+// Get top-100 artist IDs
+let top = try await client.getGridContent(name: GridContentName.top100Artists)
+let artists = try await client.getArtists(top.ids)
+
+```
+
 ## Subscription
 
 ```swift
@@ -498,12 +524,30 @@ All methods are `async throws`.
 | `getSubscription()` | Subscription info |
 | `getFeaturedInfo()` | Feature flags and targeting |
 
-**Editorial:**
+**Grid (Page Layouts):**
 
 | Method | Description |
 |--------|-------------|
-| `getGridContent(name:rankerEnabled:)` | Grid content |
+| `getGrid(name:)` | Page layout with sections and item IDs |
+| `getGridContent(name:)` | Flat list of content IDs (top-100, editorial) |
 | `getEditorialPlaylistIds()` | Curated playlist IDs |
+
+Available `GridName` constants for `getGrid(name:)`:
+
+| Constant | Description |
+|----------|-------------|
+| `GridName.popularMusic` | Popular/Music — playlists, releases, artists, genre charts |
+| `GridName.popularBooks` | Popular/Books — audiobook sections |
+| `GridName.popularRadio` | Popular/Radio — radio station groups |
+| `GridName.adsConfig` | Ad configuration |
+
+Available `GridContentName` constants for `getGridContent(name:)`:
+
+| Constant | Description |
+|----------|-------------|
+| `GridContentName.top100Artists` | Top 100 artist IDs → use with `getArtists(_:)` |
+| `GridContentName.top100Podcasts` | Top 100 podcast IDs → use with `getPodcasts(_:)` |
+| `GridContentName.editorialPlaylists` | Editorial playlist IDs → use with `getPlaylists(_:)` |
 
 **Synthesis:**
 

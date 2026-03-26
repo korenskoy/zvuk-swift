@@ -179,7 +179,7 @@ struct DumpAPIResponses {
 
         // 15) getGridContent
         try await withCapture(client: client, name: "getGridContent") {
-            _ = try await client.getGridContent()
+            _ = try await client.getGridContent(name: "editorial_playlist")
         }
 
         // 16) getProfile

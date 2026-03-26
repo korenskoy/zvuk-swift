@@ -385,8 +385,8 @@ struct EditorialTests {
     @Test("Get grid content")
     func getGridContent() async throws {
         let client = try await sharedClient()
-        let items = try await client.getGridContent()
-        for item in items {
+        let page = try await client.getGridContent(name: "editorial_playlist")
+        for item in page.data {
             #expect(!item.id.isEmpty)
             #expect(!item.type.isEmpty)
         }

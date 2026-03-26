@@ -483,31 +483,10 @@ public final class ZvukClient: Sendable {
         return try decodeList(SynthesisPlaylist.self, from: result["synthesisPlaylist"] as Any)
     }
 
-    // MARK: - Editorial / Grid Content
-
-    /// Get grid content items from Tiny API.
-    public func getGridContent(
-        name: String = "editorial_playlist",
-        rankerEnabled: Bool = true
-    ) async throws -> [GridContentItem] {
-        let result = try await request.get(
-            url: "\(APIConstants.tinyAPIURL)/grid/content",
-            params: [
-                "name": name,
-                "ranker_enabled": String(rankerEnabled),
-            ]
-        )
-        guard let result,
-            let page = result["page"] as? [String: Any],
-            let data = page["data"] as? [[String: Any]]
-        else { return [] }
-        return try decodeList(GridContentItem.self, from: data)
-    }
-
     /// Get editorial (curated) playlist IDs.
     public func getEditorialPlaylistIds() async throws -> [String] {
-        let items = try await getGridContent(name: "editorial_playlist")
-        return items.filter { $0.type == "playlist" }.map(\.id)
+        let page = try await getGridContent(name: GridContentName.editorialPlaylists)
+        return page.data.filter { $0.type == "playlist" }.map(\.id)
     }
 
     // MARK: - Podcasts
@@ -1025,11 +1004,59 @@ public final class ZvukClient: Sendable {
         return try decode(SubscriptionResult.self, from: data)
     }
 
+    // MARK: - Grid
+
+    /// Get a grid page layout (sections with content IDs).
+    ///
+    /// Known grid names:
+    /// - `popular_music_web` — Popular/Music page layout
+    /// - `popular_book_web` — Popular/Books page layout
+    /// - `web-public-main-radio` — Popular/Radio page layout
+    /// - `web-ads-config` — Ad configuration
+    ///
+    /// ```swift
+    /// let grid = try await client.getGrid(name: "popular_music_web")
+    /// for section in grid.sections {
+    ///     print("\(section.header?.title ?? "—"): \(section.data.count) items")
+    /// }
+    /// ```
+    public func getGrid(name: String) async throws -> GridPage {
+        guard let data = try await request.get(
+            url: "\(APIConstants.tinyAPIURL)/grid",
+            params: ["name": name]
+        ) else {
+            return GridPage()
+        }
+        let page = data["page"] as? [String: Any] ?? data
+        return try decode(GridPage.self, from: page)
+    }
+
+    /// Get grid content items (e.g. top-100 artist/podcast IDs).
+    ///
+    /// Known content list names:
+    /// - `top_100_artists_new_web` — Top 100 artists
+    /// - `top_100_podcasts_new_web` — Top 100 podcasts
+    ///
+    /// ```swift
+    /// let content = try await client.getGridContent(name: "top_100_artists_new_web")
+    /// let artistIds = content.ids
+    /// ```
+    public func getGridContent(name: String) async throws -> GridContentPage {
+        guard let data = try await request.get(
+            url: "\(APIConstants.tinyAPIURL)/grid/content",
+            params: ["name": name]
+        ) else {
+            return GridContentPage()
+        }
+        let page = data["page"] as? [String: Any] ?? data
+        return try decode(GridContentPage.self, from: page)
+    }
+
     // MARK: - Featured Info
 
     /// Get feature flags and user targeting info.
     public func getFeaturedInfo() async throws -> FeaturedInfo {
-        guard let data = try await request.get(url: "https://zvuk.com/api/featured/info") else {
+        guard let data = try await request.get(url: "https://zvuk.com/api/featured/info") else { // not under /tiny
             return FeaturedInfo()
         }
         return try decode(FeaturedInfo.self, from: data)

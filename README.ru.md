@@ -22,7 +22,7 @@
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.1.0"),
+    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.2.0"),
 ]
 ```
 
@@ -305,6 +305,32 @@ let nextPage = try await client.getRadioByArtist("754367", cursor: radio.cursor)
 let trackRadio = try await client.getRadioByTrack("5896627")
 ```
 
+## Гриды (разметка страниц)
+
+```swift
+// Получить разметку страницы «Популярное / Музыка»
+let grid = try await client.getGrid(name: GridName.popularMusic)
+
+for section in grid.sections where section.enabled {
+    print("\(section.header?.title ?? "—") (\(section.data.count) элементов)")
+
+    // Загрузить плейлисты секции
+    if !section.playlistIds.isEmpty {
+        let playlists = try await client.getPlaylists(section.playlistIds)
+    }
+
+    // Загрузить релизы
+    if !section.releaseIds.isEmpty {
+        let releases = try await client.getReleases(section.releaseIds)
+    }
+}
+
+// Получить ID артистов из Топ-100
+let top = try await client.getGridContent(name: GridContentName.top100Artists)
+let artists = try await client.getArtists(top.ids)
+
+```
+
 ## Подписка
 
 ```swift
@@ -498,12 +524,30 @@ let client = ZvukClient(
 | `getSubscription()` | Информация о подписке |
 | `getFeaturedInfo()` | Feature flags и таргетинг |
 
-**Редакционное:**
+**Гриды (разметка страниц):**
 
 | Метод | Описание |
 |-------|----------|
-| `getGridContent(name:rankerEnabled:)` | Контент сетки |
+| `getGrid(name:)` | Разметка страницы с секциями и ID элементов |
+| `getGridContent(name:)` | Плоский список ID (топ-100, редакционные) |
 | `getEditorialPlaylistIds()` | ID редакционных плейлистов |
+
+Доступные константы `GridName` для `getGrid(name:)`:
+
+| Константа | Описание |
+|-----------|----------|
+| `GridName.popularMusic` | Популярное/Музыка — плейлисты, релизы, артисты, жанровые чарты |
+| `GridName.popularBooks` | Популярное/Книги — разделы аудиокниг |
+| `GridName.popularRadio` | Популярное/Радио — группы радиостанций |
+| `GridName.adsConfig` | Конфигурация рекламы |
+
+Доступные константы `GridContentName` для `getGridContent(name:)`:
+
+| Константа | Описание |
+|-----------|----------|
+| `GridContentName.top100Artists` | Топ-100 артистов → используйте с `getArtists(_:)` |
+| `GridContentName.top100Podcasts` | Топ-100 подкастов → используйте с `getPodcasts(_:)` |
+| `GridContentName.editorialPlaylists` | Редакционные плейлисты → используйте с `getPlaylists(_:)` |
 
 **Синтез:**
 
