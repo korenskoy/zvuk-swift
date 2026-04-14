@@ -119,23 +119,29 @@ public struct SimpleEpisode: Codable, Hashable, Identifiable, Sendable {
     public let title: String
     public let explicit: Bool
     public let duration: Int
+    public let availability: Int
     public let publicationDate: String?
     public let image: Image?
+    public let podcast: SimplePodcast?
 
     public init(
         id: String = "",
         title: String = "",
         explicit: Bool = false,
         duration: Int = 0,
+        availability: Int = 0,
         publicationDate: String? = nil,
-        image: Image? = nil
+        image: Image? = nil,
+        podcast: SimplePodcast? = nil
     ) {
         self.id = id
         self.title = title
         self.explicit = explicit
         self.duration = duration
+        self.availability = availability
         self.publicationDate = publicationDate
         self.image = image
+        self.podcast = podcast
     }
 
     /// Duration in MM:SS format.
@@ -143,6 +149,22 @@ public struct SimpleEpisode: Codable, Hashable, Identifiable, Sendable {
         let minutes = duration / 60
         let seconds = duration % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeDefault(String.self, forKey: .id, default: "")
+        title = try c.decodeDefault(String.self, forKey: .title, default: "")
+        explicit = try c.decodeDefault(Bool.self, forKey: .explicit, default: false)
+        duration = try c.decodeDefault(Int.self, forKey: .duration, default: 0)
+        availability = try c.decodeDefault(Int.self, forKey: .availability, default: 0)
+        publicationDate = try? c.decodeIfPresent(String.self, forKey: .publicationDate)
+        image = try? c.decodeIfPresent(Image.self, forKey: .image)
+        podcast = try? c.decodeIfPresent(SimplePodcast.self, forKey: .podcast)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, explicit, duration, availability, publicationDate, image, podcast
     }
 }
 

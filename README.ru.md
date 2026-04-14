@@ -22,7 +22,7 @@
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.2.0"),
+    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.3.0"),
 ]
 ```
 
@@ -79,10 +79,29 @@ if let artist = try await client.getArtist(
 // Быстрый поиск (для автокомплита)
 let quick = try await client.quickSearch("Nothing Else Matters", limit: 5)
 
-// Полнотекстовый поиск
+// Полнотекстовый поиск по всем разделам
 let search = try await client.search("Metallica", limit: 10)
 print("Найдено треков: \(search.tracks?.page?.total ?? 0)")
 print("Найдено артистов: \(search.artists?.page?.total ?? 0)")
+
+// Поиск по одному разделу с курсорной пагинацией
+var cursor: String? = nil
+repeat {
+    let page = try await client.searchTracks("Metallica", limit: 20, cursor: cursor)
+    for track in page.items {
+        print("\(track.title) — \(track.artistsString)")
+    }
+    cursor = page.page?.cursor
+} while cursor != nil
+
+// Остальные помощники устроены так же:
+_ = try await client.searchArtists("Metallica")
+_ = try await client.searchReleases("Metallica")
+_ = try await client.searchPlaylists("Metallica")
+_ = try await client.searchPodcasts("Serial")
+_ = try await client.searchEpisodes("Serial")
+_ = try await client.searchProfiles("dj")
+_ = try await client.searchBooks("Dune") // раздел books без курсора
 ```
 
 ### Треки
@@ -417,7 +436,15 @@ let client = ZvukClient(
 | Метод | Описание |
 |-------|----------|
 | `quickSearch(_:limit:)` | Быстрый поиск (автокомплит) |
-| `search(_:limit:...)` | Полнотекстовый поиск с фильтрами |
+| `search(_:limit:...)` | Полнотекстовый поиск, фильтры и курсоры по разделам |
+| `searchTracks(_:limit:cursor:)` | Постраничный поиск только треков |
+| `searchArtists(_:limit:cursor:)` | Постраничный поиск только артистов |
+| `searchReleases(_:limit:cursor:)` | Постраничный поиск только релизов |
+| `searchPlaylists(_:limit:cursor:)` | Постраничный поиск только плейлистов |
+| `searchPodcasts(_:limit:cursor:)` | Постраничный поиск только подкастов |
+| `searchEpisodes(_:limit:cursor:)` | Постраничный поиск только эпизодов подкастов |
+| `searchProfiles(_:limit:cursor:)` | Постраничный поиск только профилей |
+| `searchBooks(_:limit:)` | Поиск только аудиокниг (без курсора) |
 
 **Треки и стриминг:**
 

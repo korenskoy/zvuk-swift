@@ -170,6 +170,27 @@ struct SearchTests {
             profiles: false, books: false
         )
         #expect(result.tracks != nil)
+        #expect(result.artists == nil)
+        #expect(result.releases == nil)
+    }
+
+    @Test("Section search: tracks")
+    func searchTracksSection() async throws {
+        let client = try await sharedClient()
+        let tracks = try await client.searchTracks(TestData.searchQuery, limit: 3)
+        #expect(!tracks.items.isEmpty)
+        for track in tracks.items {
+            #expect(!track.id.isEmpty)
+        }
+    }
+
+    @Test("Section search: artists")
+    func searchArtistsSection() async throws {
+        let client = try await sharedClient()
+        let artists = try await client.searchArtists(TestData.searchQuery, limit: 3)
+        for artist in artists.items {
+            #expect(!artist.id.isEmpty)
+        }
     }
 }
 

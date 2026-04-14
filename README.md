@@ -22,7 +22,7 @@ Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.2.0"),
+    .package(url: "https://github.com/korenskoy/zvuk-swift.git", from: "0.3.0"),
 ]
 ```
 
@@ -79,10 +79,29 @@ if let artist = try await client.getArtist(
 // Quick search (autocomplete)
 let quick = try await client.quickSearch("Nothing Else Matters", limit: 5)
 
-// Full-text search
+// Full-text search across all sections
 let search = try await client.search("Metallica", limit: 10)
 print("Tracks found: \(search.tracks?.page?.total ?? 0)")
 print("Artists found: \(search.artists?.page?.total ?? 0)")
+
+// Search a single section with cursor-based pagination
+var cursor: String? = nil
+repeat {
+    let page = try await client.searchTracks("Metallica", limit: 20, cursor: cursor)
+    for track in page.items {
+        print("\(track.title) — \(track.artistsString)")
+    }
+    cursor = page.page?.cursor
+} while cursor != nil
+
+// Other per-section helpers follow the same shape:
+_ = try await client.searchArtists("Metallica")
+_ = try await client.searchReleases("Metallica")
+_ = try await client.searchPlaylists("Metallica")
+_ = try await client.searchPodcasts("Serial")
+_ = try await client.searchEpisodes("Serial")
+_ = try await client.searchProfiles("dj")
+_ = try await client.searchBooks("Dune") // books section has no cursor
 ```
 
 ### Tracks
@@ -417,7 +436,15 @@ All methods are `async throws`.
 | Method | Description |
 |--------|-------------|
 | `quickSearch(_:limit:)` | Quick search (autocomplete) |
-| `search(_:limit:...)` | Full-text search with filters |
+| `search(_:limit:...)` | Full-text search, optional section filters and per-section cursors |
+| `searchTracks(_:limit:cursor:)` | Paginated search of only tracks |
+| `searchArtists(_:limit:cursor:)` | Paginated search of only artists |
+| `searchReleases(_:limit:cursor:)` | Paginated search of only releases |
+| `searchPlaylists(_:limit:cursor:)` | Paginated search of only playlists |
+| `searchPodcasts(_:limit:cursor:)` | Paginated search of only podcasts |
+| `searchEpisodes(_:limit:cursor:)` | Paginated search of only podcast episodes |
+| `searchProfiles(_:limit:cursor:)` | Paginated search of only profiles |
+| `searchBooks(_:limit:)` | Search only audiobooks (no cursor) |
 
 **Tracks & Streaming:**
 

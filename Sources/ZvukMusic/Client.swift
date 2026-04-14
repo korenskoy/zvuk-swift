@@ -121,6 +121,10 @@ public final class ZvukClient: Sendable {
     }
 
     /// Full-text search with filters and pagination.
+    ///
+    /// Toggle individual sections with the `tracks`/`artists`/... parameters —
+    /// disabled sections are skipped via `@include` server-side.
+    /// Each section supports cursor-based pagination via the `*Cursor` parameters.
     public func search(
         _ query: String,
         limit: Int = 20,
@@ -133,32 +137,159 @@ public final class ZvukClient: Sendable {
         profiles: Bool = true,
         books: Bool = true,
         trackCursor: String? = nil,
-        artistCursor: String? = nil,
-        releaseCursor: String? = nil,
-        playlistCursor: String? = nil
+        artistsCursor: String? = nil,
+        releasesCursor: String? = nil,
+        playlistsCursor: String? = nil,
+        episodesCursor: String? = nil,
+        profilesCursor: String? = nil,
+        podcastsCursor: String? = nil
     ) async throws -> Search {
         let gql = try GraphQLLoader.loadQuery("search")
         var variables: [String: Any] = [
             "query": query,
             "limit": limit,
-            "withTracks": tracks,
-            "withArtists": artists,
-            "withReleases": releases,
-            "withPlaylists": playlists,
-            "withPodcasts": podcasts,
-            "withEpisodes": episodes,
-            "withProfiles": profiles,
-            "withBooks": books,
+            "tracks": tracks,
+            "artists": artists,
+            "releases": releases,
+            "playlists": playlists,
+            "podcasts": podcasts,
+            "episodes": episodes,
+            "profiles": profiles,
+            "books": books,
         ]
         if let trackCursor { variables["trackCursor"] = trackCursor }
-        if let artistCursor { variables["artistCursor"] = artistCursor }
-        if let releaseCursor { variables["releaseCursor"] = releaseCursor }
-        if let playlistCursor { variables["playlistCursor"] = playlistCursor }
+        if let artistsCursor { variables["artistsCursor"] = artistsCursor }
+        if let releasesCursor { variables["releasesCursor"] = releasesCursor }
+        if let playlistsCursor { variables["playlistsCursor"] = playlistsCursor }
+        if let episodesCursor { variables["episodesCursor"] = episodesCursor }
+        if let profilesCursor { variables["profilesCursor"] = profilesCursor }
+        if let podcastsCursor { variables["podcastsCursor"] = podcastsCursor }
 
         let result = try await request.graphql(
             query: gql, operationName: "search", variables: variables)
         let data = result["search"] as? [String: Any] ?? [:]
         return try decode(Search.self, from: data)
+    }
+
+    /// Search only tracks. Supports cursor-based pagination.
+    public func searchTracks(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimpleTrack> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: true, artists: false, releases: false, playlists: false,
+            podcasts: false, episodes: false, profiles: false, books: false,
+            trackCursor: cursor
+        )
+        return result.tracks ?? SearchResult()
+    }
+
+    /// Search only artists. Supports cursor-based pagination.
+    public func searchArtists(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimpleArtist> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: true, releases: false, playlists: false,
+            podcasts: false, episodes: false, profiles: false, books: false,
+            artistsCursor: cursor
+        )
+        return result.artists ?? SearchResult()
+    }
+
+    /// Search only releases. Supports cursor-based pagination.
+    public func searchReleases(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimpleRelease> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: false, releases: true, playlists: false,
+            podcasts: false, episodes: false, profiles: false, books: false,
+            releasesCursor: cursor
+        )
+        return result.releases ?? SearchResult()
+    }
+
+    /// Search only playlists. Supports cursor-based pagination.
+    public func searchPlaylists(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimplePlaylist> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: false, releases: false, playlists: true,
+            podcasts: false, episodes: false, profiles: false, books: false,
+            playlistsCursor: cursor
+        )
+        return result.playlists ?? SearchResult()
+    }
+
+    /// Search only podcasts. Supports cursor-based pagination.
+    public func searchPodcasts(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimplePodcast> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: false, releases: false, playlists: false,
+            podcasts: true, episodes: false, profiles: false, books: false,
+            podcastsCursor: cursor
+        )
+        return result.podcasts ?? SearchResult()
+    }
+
+    /// Search only podcast episodes. Supports cursor-based pagination.
+    public func searchEpisodes(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimpleEpisode> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: false, releases: false, playlists: false,
+            podcasts: false, episodes: true, profiles: false, books: false,
+            episodesCursor: cursor
+        )
+        return result.episodes ?? SearchResult()
+    }
+
+    /// Search only profiles. Supports cursor-based pagination.
+    public func searchProfiles(
+        _ query: String,
+        limit: Int = 20,
+        cursor: String? = nil
+    ) async throws -> SearchResult<SimpleProfile> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: false, releases: false, playlists: false,
+            podcasts: false, episodes: false, profiles: true, books: false,
+            profilesCursor: cursor
+        )
+        return result.profiles ?? SearchResult()
+    }
+
+    /// Search only books.
+    ///
+    /// Note: the `books` section of the `search` query does not support
+    /// cursor-based pagination — only `limit` applies.
+    public func searchBooks(
+        _ query: String,
+        limit: Int = 20
+    ) async throws -> SearchResult<SimpleBook> {
+        let result = try await search(
+            query, limit: limit,
+            tracks: false, artists: false, releases: false, playlists: false,
+            podcasts: false, episodes: false, profiles: false, books: true
+        )
+        return result.books ?? SearchResult()
     }
 
     // MARK: - Tracks
