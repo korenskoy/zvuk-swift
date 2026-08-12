@@ -1,5 +1,8 @@
-mutation createPlayList($items: [PlaylistItem!]!, $name: String!) {
+# Извлечено из web-клиента zvuk.com v8.6.2
+mutation createPlaylist($items: [PlaylistItem!] = [], $name: String!) {
   playlist {
-    create(items: $items, name: $name)
+    createV1(items: $items, name: $name) {
+      id
+    }
   }
 }

@@ -19,8 +19,7 @@ public struct FeaturedInfo: Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case closedBanners = "closed_banners"
-        case targets
+        case closedBanners, targets
     }
 
     // MARK: - Convenience

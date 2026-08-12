@@ -1,0 +1,18 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getBookAuthors($ids: [ID!]!, $withLikesCount: Boolean = false) {
+  getBookAuthors(ids: $ids) {
+    id
+    rname
+    mark
+    description
+    collectionItemData {
+      likesCount @include(if: $withLikesCount)
+    }
+    image {
+      src
+      palette
+      paletteBottom
+    }
+    __typename
+  }
+}

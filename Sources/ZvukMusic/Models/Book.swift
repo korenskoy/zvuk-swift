@@ -12,6 +12,18 @@ public struct BookAuthor: Codable, Hashable, Identifiable, Sendable {
         self.rname = rname
         self.image = image
     }
+
+    // Разные запросы просят у автора разный набор полей — декодируем терпимо.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeDefault(String.self, forKey: .id, default: "")
+        rname = try c.decodeDefault(String.self, forKey: .rname, default: "")
+        image = try? c.decodeIfPresent(Image.self, forKey: .image)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, rname, image
+    }
 }
 
 /// Brief book information.
@@ -34,6 +46,19 @@ public struct SimpleBook: Codable, Hashable, Identifiable, Sendable {
         self.authorNames = authorNames
         self.bookAuthors = bookAuthors
         self.image = image
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeDefault(String.self, forKey: .id, default: "")
+        title = try c.decodeDefault(String.self, forKey: .title, default: "")
+        authorNames = try c.decodeArray([String].self, forKey: .authorNames)
+        bookAuthors = try c.decodeArray([BookAuthor].self, forKey: .bookAuthors)
+        image = try? c.decodeIfPresent(Image.self, forKey: .image)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, title, authorNames, bookAuthors, image
     }
 
     /// Author names separated by commas.

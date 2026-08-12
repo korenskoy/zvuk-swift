@@ -37,11 +37,25 @@ public struct NetworkLogEntry: Sendable {
 final class Request: @unchecked Sendable {
     private let session: URLSession
     private var headers: [String: String]
-    private var userAgent: String
+    private let userAgent: String
     private let throttler: Throttler?
-    private let timeout: TimeInterval
     private let lock = NSLock()
-    var onLog: (@Sendable (NetworkLogEntry) -> Void)?
+    private var _onLog: (@Sendable (NetworkLogEntry) -> Void)?
+
+    /// Read by in-flight requests on background executors, set from any thread —
+    /// guarded by the same lock as `headers`.
+    var onLog: (@Sendable (NetworkLogEntry) -> Void)? {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _onLog
+        }
+        set {
+            lock.lock()
+            _onLog = newValue
+            lock.unlock()
+        }
+    }
 
     init(
         token: String? = nil,
@@ -50,7 +64,6 @@ final class Request: @unchecked Sendable {
         userAgent: String? = nil,
         throttler: Throttler? = nil
     ) {
-        self.timeout = timeout
         self.userAgent = userAgent ?? APIConstants.defaultUserAgent
         self.throttler = throttler
 
@@ -272,20 +285,29 @@ final class Request: @unchecked Sendable {
     }
 
     private func parseResponse(_ data: Data) throws -> [String: Any] {
-        // Check for bot protection
+        // Bot protection answers with an HTML page, which cannot parse as JSON.
+        // Sniffing the body only once parsing has failed keeps two full-size
+        // string copies off every successful response, and stops a track called
+        // "bot activity" from tripping the check.
+        guard let json = try? JSONSerialization.jsonObject(with: data),
+            let dict = json as? [String: Any]
+        else {
+            throw Self.malformedResponseError(data)
+        }
+
+        return dict
+    }
+
+    /// Distinguish a bot-protection page from an otherwise unusable response.
+    private static func malformedResponseError(_ data: Data) -> ZvukError {
         if let text = String(data: data, encoding: .utf8) {
             let lower = text.lowercased()
             if lower.contains("bot activity") || lower.prefix(100).contains("<html") {
-                throw ZvukError.botDetected(
+                return .botDetected(
                     message: "API detected bot activity. Try using a different User-Agent.")
             }
         }
-
-        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw ZvukError.network(message: "Invalid server response (not JSON)")
-        }
-
-        return convertKeysToCamelCase(json)
+        return .network(message: "Invalid server response (not JSON)")
     }
 
     private func parseErrorMessage(from data: Data) -> String? {
@@ -304,34 +326,4 @@ final class Request: @unchecked Sendable {
         return nil
     }
 
-    /// Recursively convert snake_case JSON keys to camelCase.
-    private func convertKeysToCamelCase(_ dict: [String: Any]) -> [String: Any] {
-        var result: [String: Any] = [:]
-        for (key, value) in dict {
-            let camelKey = snakeToCamelCase(key)
-            result[camelKey] = convertValue(value)
-        }
-        return result
-    }
-
-    private func convertValue(_ value: Any) -> Any {
-        if let dict = value as? [String: Any] {
-            return convertKeysToCamelCase(dict)
-        }
-        if let array = value as? [Any] {
-            return array.map { convertValue($0) }
-        }
-        return value
-    }
-
-    /// Convert snake_case to camelCase.
-    private func snakeToCamelCase(_ text: String) -> String {
-        // Preserve GraphQL meta fields like __typename
-        guard !text.hasPrefix("__") else { return text }
-        let parts = text.split(separator: "_", omittingEmptySubsequences: false)
-        guard parts.count > 1 else { return text }
-        let first = String(parts[0])
-        let rest = parts.dropFirst().map { $0.prefix(1).uppercased() + $0.dropFirst() }
-        return first + rest.joined()
-    }
 }

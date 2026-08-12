@@ -1,0 +1,6 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getDynamicBlockPagesCount {
+  dynamicBlock(contentType: Music, itemType: [Artist, Release, Playlist], pages: [1]) {
+    totalPages
+  }
+}

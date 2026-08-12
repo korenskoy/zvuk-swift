@@ -1,0 +1,31 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getRelatedAuthors($id: ID!, $limitAuthors: Int) {
+  getBookAuthors(ids: [$id]) {
+    id
+    rname
+    image {
+      src
+      palette
+    }
+    mark
+    getAuthorsCursorBooks(limit: 1) {
+      books {
+        id
+      }
+    }
+  }
+  relatedAuthors(book_author_id: $id, limit: $limitAuthors) {
+    id
+    rname
+    image {
+      src
+      palette
+    }
+    mark
+    getAuthorsCursorBooks(limit: 1) {
+      books {
+        id
+      }
+    }
+  }
+}

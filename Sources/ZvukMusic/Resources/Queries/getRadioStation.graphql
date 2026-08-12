@@ -1,0 +1,22 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getRadioStation($ids: [ID!]!) {
+  getRadioStations(ids: $ids) {
+    id
+    name
+    radioLogoBlack {
+      png
+      png
+    }
+    radioLogoColored {
+      png
+      svg
+    }
+    radioLogoWhite {
+      png
+      svg
+    }
+    metaDataUrl
+    source
+    __typename
+  }
+}

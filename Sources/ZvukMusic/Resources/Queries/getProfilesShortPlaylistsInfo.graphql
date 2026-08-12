@@ -1,0 +1,15 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getProfilesShortPlaylistsInfo($limit: Int = 6, $offset: String = null) {
+  getUserPlaylists {
+    paginated(pagination: {first: $limit, after: $offset}) {
+      playlists {
+        id
+        title
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}

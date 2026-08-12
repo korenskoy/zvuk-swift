@@ -1,0 +1,38 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getClusterWaveContentShortInfo($clusterId: NonNegativeInt!, $first: PositiveInt! = 1, $contentInput: PersonalWaveContentInput) {
+  byClusterWaveContent(clusterId: $clusterId, first: $first, contentInput: $contentInput) {
+    ...PlayerTrackData
+  }
+}
+
+fragment PlayerTrackData on Track {
+  id
+  title
+  lyrics
+  hasFlac
+  duration
+  explicit
+  availability
+  artistTemplate
+  childParam
+  mark
+  artists {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  release {
+    id
+    title
+    image {
+      src
+      palette
+    }
+  }
+  zchan
+  __typename
+}

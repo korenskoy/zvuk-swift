@@ -322,6 +322,88 @@ let nextPage = try await client.getRadioByArtist("754367", cursor: radio.cursor)
 
 // Radio by track
 let trackRadio = try await client.getRadioByTrack("5896627")
+
+// Radio seeded by a release or a playlist
+let releaseRadio = try await client.getRadioByRelease("14607201")
+let playlistRadio = try await client.getRadioByPlaylist("123456")
+```
+
+### Internet Radio Stations
+
+Live stations are a separate content type — a continuous stream rather than a
+track list.
+
+```swift
+let stations = try await client.getRadioStations(limit: 20)
+for station in stations {
+    print(station.name)                  // "Европа Плюс - Россия"
+    print(station.source ?? "")          // stream URL
+    print(station.metaDataUrl ?? "")     // now-playing metadata feed
+    print(station.logoColored?.svg ?? "")
+}
+
+let single = try await client.getRadioStation("1")
+```
+
+### Editorial Waves
+
+Waves are server-curated streams. `localtime` is required — the server picks
+different content for morning and evening listeners.
+
+```swift
+let wave = try await client.getWave("1")        // "МегаХит"
+print(wave?.description ?? "")                  // "Топ российских чартов"
+
+let items = try await client.getWaveContent(waveId: "1")
+for item in items {
+    print(item.track?.title ?? item.itemId, "skippable:", item.skippable)
+}
+```
+
+## Recently Played
+
+`getRecentlyPlayed` returns *entities the user opened* — albums, playlists,
+artists, waves, radio stations — not individual tracks. For a track-level
+history use `getListeningHistory(limit:)`.
+
+```swift
+let recent = try await client.getRecentlyPlayed(limit: 10)
+for item in recent {
+    print(item.type ?? .release, item.title ?? item.id, item.lastListeningDttm ?? "")
+}
+
+// Only albums and playlists
+let filtered = try await client.getRecentlyPlayed(
+    limit: 20,
+    itemTypes: [.release, .playlist]
+)
+```
+
+## Search Suggestions
+
+```swift
+// Completions for a partially typed query
+let suggestions = try await client.getSearchAutocomplete("нирв")
+// ["нирвана", "нирвана лучшее", "нирван", "нирванна"]
+
+// What everyone else is searching for
+let popular = try await client.getPopularSearches(limit: 10)
+print(popular.queries)
+
+// Resolve a name to an ID without fetching the whole entity
+let ids = try await client.searchArtistIDs("Radiohead", limit: 1)
+```
+
+## Cheap Counters
+
+Checking collection membership without downloading the collection:
+
+```swift
+let trackCount = try await client.getCollectionTracksCount()
+let ids = try await client.getCollectionIDs()
+print(ids.tracks.count, ids.releases.count, ids.artists.count)
+
+let followers = try await client.getArtistLikesCount(["433980"])
 ```
 
 ## Grid (Page Layouts)
@@ -418,6 +500,10 @@ let client = ZvukClient(
 ```
 
 ## API Reference
+
+The tables below cover the most-used methods. For the complete catalogue —
+every Swift method, the GraphQL operation behind it and its variables — see
+**[API.md](API.md)**.
 
 ### ZvukClient
 
@@ -582,6 +668,88 @@ Available `GridContentName` constants for `getGridContent(name:)`:
 |--------|-------------|
 | `synthesisPlaylistBuild(firstAuthorId:secondAuthorId:)` | AI playlist |
 | `getSynthesisPlaylists(_:)` | Get synthesis playlists |
+
+**Internet radio:**
+
+| Method | Description |
+|--------|-------------|
+| `getRadioStations(limit:offset:)` | Station catalogue |
+| `getRadioStations(ids:)` / `getRadioStation(_:)` | Stations by ID |
+| `getRadioByRelease(_:limit:cursor:)` | Recommender radio seeded by a release |
+| `getRadioByPlaylist(_:limit:cursor:)` | Recommender radio seeded by a playlist |
+
+**Waves:**
+
+| Method | Description |
+|--------|-------------|
+| `getWaves(_:)` / `getWave(_:)` | Wave title, description, cover |
+| `getWaveContent(waveId:localtime:)` | Next batch of wave items |
+| `getKidsWaveContent(waveId:localtime:waveSource:)` | Kids wave |
+| `getClusterWaveContent(clusterId:first:localtime:)` | Personal-wave cluster preview |
+
+**Recently played & counters:**
+
+| Method | Description |
+|--------|-------------|
+| `getRecentlyPlayed(limit:offset:itemTypes:isKidContent:)` | Recently opened entities (not tracks) |
+| `getCollectionTracksCount()` | Number of liked tracks |
+| `getCollectionIDs()` | All collection IDs grouped by type |
+| `getOwnPlaylistIDs()` | IDs of the user's playlists |
+| `getArtistLikesCount(_:)` | Follower counts for artists |
+| `getSubscriptions(statuses:)` | Active subscriptions |
+| `getUnreadNotificationsCount(types:)` | Unread notification count |
+
+**Search suggestions:**
+
+| Method | Description |
+|--------|-------------|
+| `getSearchAutocomplete(_:limit:)` | Query completions |
+| `getPopularSearches(limit:cursor:explicit:)` | Trending queries |
+| `getBlendedSearch(_:limit:)` | Mixed relevance-ranked results (raw) |
+| `searchArtistIDs(_:limit:)` and siblings | ID-only search for artists, podcasts, books, authors |
+
+**Artists (extended):**
+
+| Method | Description |
+|--------|-------------|
+| `getArtistsShortInfo(_:withLikesCount:)` | Name and cover only |
+| `getArtistPopularTracks(_:limit:offset:)` | Popular tracks, offset paging |
+| `getArtistPopularTracksPage(_:limit:cursor:withPreview:)` | Popular tracks, cursor paging |
+| `getArtistReleasesPage(_:limit:includeTypes:excludeTypes:cursor:)` | Releases, filterable by type |
+| `getArtistAlbums(_:)` / `getArtistSingles(_:)` / `getArtistCompilations(_:)` | Discography sections |
+| `getRelatedArtists(_:limit:popularTracksLimit:withPopularTracks:)` | Similar artists |
+| `getArtistPage(_:...)` | Everything the web artist page shows |
+
+**Releases & tracks (extended):**
+
+| Method | Description |
+|--------|-------------|
+| `getRelatedReleases(_:limit:)` | Similar releases |
+| `getReleasesTracks(_:)` | Track lists only |
+| `getReleasesShortInfo(_:withArtists:)` | Title, type, cover |
+| `getTracksShortInfo(_:)` / `getTracksMinimalInfo(_:)` | Lighter track payloads |
+| `getTrackStreamPreviews(_:quality:encodeType:)` | Preview URLs (no subscription needed) |
+
+**Audiobooks:**
+
+| Method | Description |
+|--------|-------------|
+| `getAudioBooks(_:withChapters:)` | Book cards |
+| `getBookChapters(_:)` / `getChapters(_:)` / `getChapter(_:)` | Chapters |
+| `getBookAuthors(_:withLikesCount:)` / `getAuthorBooks(_:limit:cursor:)` | Authors and their books |
+| `getRelatedBooks(_:limit:)` / `getRelatedAuthors(_:limit:)` | Similar books and authors |
+| `getBooksRecommendations(recType:first:skip:withAuthors:)` | Recommended books |
+
+**Profiles & follows:**
+
+| Method | Description |
+|--------|-------------|
+| `getProfiles(_:withPlaylists:...)` | Profiles by ID |
+| `getProfilePlaylists(_:...)` / `getProfileFirstPlaylistTracks(_:limit:offset:)` | Playlists on a profile |
+| `getFollowers(_:itemType:limit:cursor:)` / `getFollowing(_:limit:cursor:)` | Follow graph |
+| `getRelatedProfiles(_:limit:)` | Profiles with similar taste |
+| `setProfileSettings(name:description:)` | Update own profile |
+| `createMigration(links:)` / `getMigrationStatus(_:)` | Import playlists from another service |
 
 ## References
 

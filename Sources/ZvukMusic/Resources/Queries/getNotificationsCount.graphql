@@ -1,0 +1,8 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getNotificationsCount($availableTypes: [NotificationTypes!]) {
+  notification {
+    typesCount(availableTypes: $availableTypes) {
+      count
+    }
+  }
+}

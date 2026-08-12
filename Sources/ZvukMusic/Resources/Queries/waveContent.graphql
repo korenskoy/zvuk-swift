@@ -1,0 +1,50 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query waveContent($contentInput: WaveContentInput!) {
+  wave {
+    waveContent(contentInput: $contentInput) {
+      itemId
+      itemType
+      compilationId
+      sequence
+      skippable
+      content {
+        __typename
+        ... on Track {
+          ...PlayerTrackData
+        }
+      }
+    }
+  }
+}
+
+fragment PlayerTrackData on Track {
+  id
+  title
+  lyrics
+  hasFlac
+  duration
+  explicit
+  availability
+  artistTemplate
+  childParam
+  mark
+  artists {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  release {
+    id
+    title
+    image {
+      src
+      palette
+    }
+  }
+  zchan
+  __typename
+}

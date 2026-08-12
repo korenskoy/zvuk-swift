@@ -1,0 +1,13 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+# `id` добавлен к оригинальной выборке: сервер молча пропускает недоступные
+# треки, и без идентификатора превью пришлось бы сопоставлять по позиции.
+query getTrackStreamPreview($ids: [ID!]!, $quality: String, $encodeType: String) {
+  mediaContents(ids: $ids, quality: $quality, encodeType: $encodeType) {
+    ... on Track {
+      id
+      stream {
+        preview
+      }
+    }
+  }
+}

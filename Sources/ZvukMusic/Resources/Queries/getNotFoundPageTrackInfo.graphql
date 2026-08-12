@@ -1,0 +1,25 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getNotFoundPageTrackInfo($ids: [ID!]!) {
+  getTracks(ids: $ids) {
+    id
+    title
+    duration
+    mark
+    artists {
+      id
+      title
+      image {
+        src
+        palette
+      }
+    }
+    release {
+      id
+      title
+      image {
+        src
+        palette
+      }
+    }
+  }
+}

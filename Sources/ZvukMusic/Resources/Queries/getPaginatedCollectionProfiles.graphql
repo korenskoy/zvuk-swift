@@ -1,0 +1,14 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPaginatedCollectionProfiles($limit: Int = 1000) {
+  paginatedCollection {
+    profiles(pagination: {first: $limit}) {
+      items {
+        id
+        name
+        image {
+          src
+        }
+      }
+    }
+  }
+}

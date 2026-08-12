@@ -1,0 +1,84 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getProfiles($ids: [ID!]!, $withPlaylists: Boolean = false, $countPlaylists: Int = 0, $playlistTracksLimit: Int = 10, $playlistTracksOffset: Int = 0) {
+  profiles(ids: $ids) {
+    id
+    name
+    type
+    backgroundColor
+    image {
+      src
+    }
+    cover {
+      src
+    }
+    defaultImage {
+      src
+    }
+    description
+    additionalData {
+      __typename
+      ... on CompanyProfileData {
+        id
+        site
+        banner {
+          srcMobile
+          srcWeb
+          link
+        }
+      }
+      ... on UserProfileData {
+        id
+      }
+    }
+    playlistsV1 {
+      paginated(pagination: {first: $countPlaylists}) @include(if: $withPlaylists) {
+        playlists {
+          id
+          title
+          hashtags {
+            id
+            name
+          }
+          duration
+          tracks(limit: $playlistTracksLimit, offset: $playlistTracksOffset) {
+            ...PlayerTrackData
+          }
+          trackCount
+        }
+      }
+      totalCount
+    }
+  }
+}
+
+fragment PlayerTrackData on Track {
+  id
+  title
+  lyrics
+  hasFlac
+  duration
+  explicit
+  availability
+  artistTemplate
+  childParam
+  mark
+  artists {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  release {
+    id
+    title
+    image {
+      src
+      palette
+    }
+  }
+  zchan
+  __typename
+}

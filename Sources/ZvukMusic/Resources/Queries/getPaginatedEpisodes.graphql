@@ -1,0 +1,45 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPaginatedEpisodes($ids: ID!, $limit: Int, $cursor: String, $order: OrderType!) {
+  getPaginatedEpisodes(ids: $ids, order_type: $order, limit: $limit, cursor: $cursor) {
+    episodes {
+      ...PlayerEpisodeData
+    }
+    pageInfo {
+      endCursor
+    }
+  }
+}
+
+fragment PlayerEpisodeData on Episode {
+  id
+  title
+  availability
+  duration
+  childParam
+  publicationDate
+  explicit
+  image {
+    src
+    palette
+  }
+  podcast {
+    id
+    title
+    authors {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+    image {
+      src
+      palette
+    }
+    explicit
+    mark
+  }
+  mark
+  __typename
+}

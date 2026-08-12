@@ -1,0 +1,37 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getBookChapters($ids: [ID!]!) {
+  getBooks(ids: $ids) {
+    title
+    mark
+    explicit
+    chapters {
+      ...PlayerChapterData
+    }
+  }
+}
+
+fragment PlayerChapterData on Chapter {
+  id
+  title
+  availability
+  duration
+  childParamV2
+  image {
+    src
+  }
+  book {
+    id
+    title
+    mark
+    explicit
+  }
+  bookAuthors {
+    id
+    rname
+    image {
+      src
+    }
+  }
+  position
+  __typename
+}

@@ -1,0 +1,22 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query migrationStatus($migrationIds: [Int!]!) {
+  migration {
+    migrationStatus(migrationIds: $migrationIds) {
+      playlists {
+        id
+        title
+        trackCount
+        tracks(limit: 3) {
+          release {
+            image {
+              src
+            }
+          }
+        }
+      }
+      retryTime
+      migrationIds
+      status
+    }
+  }
+}

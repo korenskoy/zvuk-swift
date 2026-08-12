@@ -1,0 +1,6 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getUnreadNotificationsCount($availableTypes: [NotificationTypes!]) {
+  notification {
+    unreadCount(availableTypes: $availableTypes)
+  }
+}

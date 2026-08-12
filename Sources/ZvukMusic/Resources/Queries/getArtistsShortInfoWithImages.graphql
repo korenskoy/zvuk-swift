@@ -1,0 +1,21 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getArtistsShortInfoWithImages($ids: [ID!]!, $limitTracksImages: Int = 2) {
+  getArtists(ids: $ids) {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    popularTracks(limit: $limitTracksImages) {
+      release {
+        image {
+          src
+          palette
+        }
+      }
+    }
+    mark
+    __typename
+  }
+}

@@ -1,0 +1,23 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getRelatedPodcasts($id: ID!, $limitPodcasts: Int) {
+  getPodcasts(ids: [$id]) {
+    id
+    title
+    description
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  relatedPodcasts(podcast_id: $id, limit: $limitPodcasts) {
+    id
+    image {
+      palette
+      src
+    }
+    title
+    description
+    mark
+  }
+}

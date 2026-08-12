@@ -1,0 +1,21 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getProfileRelated($ids: [ID!]!, $limit: Int = 12) {
+  profiles(ids: $ids) {
+    id
+    type
+    name
+    image {
+      src
+    }
+    matches {
+      score
+    }
+    relatedProfiles(limit: $limit) {
+      id
+      name
+      image {
+        src
+      }
+    }
+  }
+}

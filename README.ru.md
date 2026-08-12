@@ -322,6 +322,87 @@ let nextPage = try await client.getRadioByArtist("754367", cursor: radio.cursor)
 
 // Радио по треку
 let trackRadio = try await client.getRadioByTrack("5896627")
+
+// Радио по релизу или плейлисту
+let releaseRadio = try await client.getRadioByRelease("14607201")
+let playlistRadio = try await client.getRadioByPlaylist("123456")
+```
+
+### Интернет-радиостанции
+
+Радиостанции — отдельный тип контента: не список треков, а непрерывный поток.
+
+```swift
+let stations = try await client.getRadioStations(limit: 20)
+for station in stations {
+    print(station.name)                  // «Европа Плюс - Россия»
+    print(station.source ?? "")          // ссылка на поток
+    print(station.metaDataUrl ?? "")     // метаданные эфира
+    print(station.logoColored?.svg ?? "")
+}
+
+let single = try await client.getRadioStation("1")
+```
+
+### Редакционные волны
+
+Волна — поток, который набирает сервер. `localtime` обязателен: утром и
+вечером подбор разный.
+
+```swift
+let wave = try await client.getWave("1")        // «МегаХит»
+print(wave?.description ?? "")                  // «Топ российских чартов»
+
+let items = try await client.getWaveContent(waveId: "1")
+for item in items {
+    print(item.track?.title ?? item.itemId, "можно пропустить:", item.skippable)
+}
+```
+
+## Недавнее
+
+`getRecentlyPlayed` возвращает *сущности, которые пользователь открывал* —
+альбомы, плейлисты, артистов, волны, радиостанции, — а не отдельные треки.
+Историю треков даёт `getListeningHistory(limit:)`.
+
+```swift
+let recent = try await client.getRecentlyPlayed(limit: 10)
+for item in recent {
+    print(item.type ?? .release, item.title ?? item.id, item.lastListeningDttm ?? "")
+}
+
+// Только альбомы и плейлисты
+let filtered = try await client.getRecentlyPlayed(
+    limit: 20,
+    itemTypes: [.release, .playlist]
+)
+```
+
+## Подсказки поиска
+
+```swift
+// Автодополнение недопечатанного запроса
+let suggestions = try await client.getSearchAutocomplete("нирв")
+// ["нирвана", "нирвана лучшее", "нирван", "нирванна"]
+
+// Что ищут остальные
+let popular = try await client.getPopularSearches(limit: 10)
+print(popular.queries)
+
+// Получить id по названию, не выкачивая сущность целиком
+let ids = try await client.searchArtistIDs("Radiohead", limit: 1)
+```
+
+## Дешёвые счётчики
+
+Проверить, что лежит в коллекции, не выкачивая её:
+
+```swift
+let trackCount = try await client.getCollectionTracksCount()
+let ids = try await client.getCollectionIDs()
+print(ids.tracks.count, ids.releases.count, ids.artists.count)
+
+let followers = try await client.getArtistLikesCount(["433980"])
 ```
 
 ## Гриды (разметка страниц)
@@ -418,6 +499,9 @@ let client = ZvukClient(
 ```
 
 ## Справочник API
+
+Ниже — наиболее востребованные методы. Полный каталог (каждый метод, стоящая
+за ним GraphQL-операция и её переменные) — в **[API.md](API.md)**.
 
 ### ZvukClient
 
@@ -582,6 +666,88 @@ let client = ZvukClient(
 |-------|----------|
 | `synthesisPlaylistBuild(firstAuthorId:secondAuthorId:)` | AI-плейлист |
 | `getSynthesisPlaylists(_:)` | Синтез-плейлисты |
+
+**Интернет-радио:**
+
+| Метод | Описание |
+|-------|----------|
+| `getRadioStations(limit:offset:)` | Каталог станций |
+| `getRadioStations(ids:)` / `getRadioStation(_:)` | Станции по id |
+| `getRadioByRelease(_:limit:cursor:)` | Радио по релизу |
+| `getRadioByPlaylist(_:limit:cursor:)` | Радио по плейлисту |
+
+**Волны:**
+
+| Метод | Описание |
+|-------|----------|
+| `getWaves(_:)` / `getWave(_:)` | Название, описание, обложка волны |
+| `getWaveContent(waveId:localtime:)` | Следующая порция контента волны |
+| `getKidsWaveContent(waveId:localtime:waveSource:)` | Детская волна |
+| `getClusterWaveContent(clusterId:first:localtime:)` | Превью кластера персональной волны |
+
+**Недавнее и счётчики:**
+
+| Метод | Описание |
+|-------|----------|
+| `getRecentlyPlayed(limit:offset:itemTypes:isKidContent:)` | Недавно открытые сущности (не треки) |
+| `getCollectionTracksCount()` | Сколько треков в коллекции |
+| `getCollectionIDs()` | Все id коллекции по типам |
+| `getOwnPlaylistIDs()` | id собственных плейлистов |
+| `getArtistLikesCount(_:)` | Число подписчиков артистов |
+| `getSubscriptions(statuses:)` | Активные подписки |
+| `getUnreadNotificationsCount(types:)` | Непрочитанные уведомления |
+
+**Подсказки поиска:**
+
+| Метод | Описание |
+|-------|----------|
+| `getSearchAutocomplete(_:limit:)` | Автодополнение запроса |
+| `getPopularSearches(limit:cursor:explicit:)` | Популярные запросы |
+| `getBlendedSearch(_:limit:)` | Смешанная выдача по релевантности (сырая) |
+| `searchArtistIDs(_:limit:)` и аналоги | Поиск только id: артисты, подкасты, книги, авторы |
+
+**Артисты (дополнительно):**
+
+| Метод | Описание |
+|-------|----------|
+| `getArtistsShortInfo(_:withLikesCount:)` | Только имя и обложка |
+| `getArtistPopularTracks(_:limit:offset:)` | Популярные треки, offset-пагинация |
+| `getArtistPopularTracksPage(_:limit:cursor:withPreview:)` | Популярные треки, курсорная пагинация |
+| `getArtistReleasesPage(_:limit:includeTypes:excludeTypes:cursor:)` | Релизы с фильтром по типу |
+| `getArtistAlbums(_:)` / `getArtistSingles(_:)` / `getArtistCompilations(_:)` | Разделы дискографии |
+| `getRelatedArtists(_:limit:popularTracksLimit:withPopularTracks:)` | Похожие артисты |
+| `getArtistPage(_:...)` | Всё, что показывает веб-страница артиста |
+
+**Релизы и треки (дополнительно):**
+
+| Метод | Описание |
+|-------|----------|
+| `getRelatedReleases(_:limit:)` | Похожие релизы |
+| `getReleasesTracks(_:)` | Только треклисты |
+| `getReleasesShortInfo(_:withArtists:)` | Название, тип, обложка |
+| `getTracksShortInfo(_:)` / `getTracksMinimalInfo(_:)` | Облегчённые данные о треках |
+| `getTrackStreamPreviews(_:quality:encodeType:)` | Превью-ссылки (подписка не нужна) |
+
+**Аудиокниги:**
+
+| Метод | Описание |
+|-------|----------|
+| `getAudioBooks(_:withChapters:)` | Карточки книг |
+| `getBookChapters(_:)` / `getChapters(_:)` / `getChapter(_:)` | Главы |
+| `getBookAuthors(_:withLikesCount:)` / `getAuthorBooks(_:limit:cursor:)` | Авторы и их книги |
+| `getRelatedBooks(_:limit:)` / `getRelatedAuthors(_:limit:)` | Похожие книги и авторы |
+| `getBooksRecommendations(recType:first:skip:withAuthors:)` | Рекомендованные книги |
+
+**Профили и подписки на людей:**
+
+| Метод | Описание |
+|-------|----------|
+| `getProfiles(_:withPlaylists:...)` | Профили по id |
+| `getProfilePlaylists(_:...)` / `getProfileFirstPlaylistTracks(_:limit:offset:)` | Плейлисты профиля |
+| `getFollowers(_:itemType:limit:cursor:)` / `getFollowing(_:limit:cursor:)` | Граф подписок |
+| `getRelatedProfiles(_:limit:)` | Профили с похожим вкусом |
+| `setProfileSettings(name:description:)` | Изменить свой профиль |
+| `createMigration(links:)` / `getMigrationStatus(_:)` | Импорт плейлистов из другого сервиса |
 
 ## Ссылки
 

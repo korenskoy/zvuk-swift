@@ -1,0 +1,6 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+mutation RecommenderOnboardingRequest($ids: [ID!]!) {
+  recommenderOnboarding {
+    chooseOnboarding(ids: $ids)
+  }
+}

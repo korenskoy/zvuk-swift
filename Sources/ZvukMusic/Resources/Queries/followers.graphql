@@ -1,0 +1,35 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query followers($id: ID!, $itemType: FollowItemType! = profile, $cursor: String, $followersLimit: Int = 100) {
+  follows(item: {itemType: $itemType, itemId: $id}) {
+    followers {
+      profiles(pagination: {first: $followersLimit, after: $cursor}) {
+        items {
+          __typename
+          ... on Profile {
+            id
+            name
+            image {
+              src
+            }
+            additionalData {
+              __typename
+              ... on ArtistProfileData {
+                artist {
+                  id
+                  title
+                  image {
+                    src
+                  }
+                }
+              }
+            }
+          }
+        }
+        page {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPodcastsByCategoryIds($endCursor: String, $first: Int, $ids: [ID!]!, $last: Int, $sortBy: SortByEnum, $startCursor: String) {
+  getPodcastsByCategoryIds(end_cursor: $endCursor, first: $first, ids: $ids, last: $last, sort_by: $sortBy, start_cursor: $startCursor) {
+    items {
+      episodes {
+        ...PlayerEpisodeData
+      }
+      id
+      title
+      image {
+        palette
+        src
+      }
+      mark
+    }
+  }
+}
+
+fragment PlayerEpisodeData on Episode {
+  id
+  title
+  availability
+  duration
+  childParam
+  publicationDate
+  explicit
+  image {
+    src
+    palette
+  }
+  podcast {
+    id
+    title
+    authors {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+    image {
+      src
+      palette
+    }
+    explicit
+    mark
+  }
+  mark
+  __typename
+}

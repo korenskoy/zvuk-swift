@@ -1,0 +1,47 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPodcastEpisodes($ids: [ID!]!) {
+  getPodcasts(ids: $ids) {
+    title
+    category {
+      id
+      name
+    }
+    episodes {
+      ...PlayerEpisodeData
+    }
+  }
+}
+
+fragment PlayerEpisodeData on Episode {
+  id
+  title
+  availability
+  duration
+  childParam
+  publicationDate
+  explicit
+  image {
+    src
+    palette
+  }
+  podcast {
+    id
+    title
+    authors {
+      id
+      name
+    }
+    category {
+      id
+      name
+    }
+    image {
+      src
+      palette
+    }
+    explicit
+    mark
+  }
+  mark
+  __typename
+}

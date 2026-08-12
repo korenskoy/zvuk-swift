@@ -72,13 +72,15 @@ public struct Stream: Codable, Hashable, Sendable {
         self.flacdrm = flacdrm
     }
 
+    // Cached parse styles: creating an ISO8601DateFormatter per call is expensive.
+    private static let isoWithFractionalSeconds = Date.ISO8601FormatStyle(includingFractionalSeconds: true)
+    private static let iso = Date.ISO8601FormatStyle()
+
     /// Whether the stream URL has expired.
     public var isExpired: Bool {
         guard !expire.isEmpty else { return true }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let expireDate = formatter.date(from: expire)
-            ?? ISO8601DateFormatter().date(from: expire)
+        guard let expireDate = (try? Date(expire, strategy: Self.isoWithFractionalSeconds))
+            ?? (try? Date(expire, strategy: Self.iso))
         else {
             return true
         }

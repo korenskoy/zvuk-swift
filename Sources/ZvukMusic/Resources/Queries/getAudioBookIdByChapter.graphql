@@ -1,0 +1,8 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getAudioBookIdByChapter($id: ID!) {
+  getChapters(ids: [$id]) {
+    book {
+      id
+    }
+  }
+}

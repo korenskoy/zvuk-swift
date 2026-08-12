@@ -63,7 +63,7 @@ public struct Track: Codable, Hashable, Identifiable, Sendable {
     public let artistTemplate: String?
     public let condition: String?
     public let explicit: Bool
-    public let lyrics: AnyCodable?
+    public let lyrics: Bool?
     public let zchan: String?
     public let hasFlac: Bool
     public let artistNames: [String]
@@ -83,7 +83,7 @@ public struct Track: Codable, Hashable, Identifiable, Sendable {
         artistTemplate: String? = nil,
         condition: String? = nil,
         explicit: Bool = false,
-        lyrics: AnyCodable? = nil,
+        lyrics: Bool? = nil,
         zchan: String? = nil,
         hasFlac: Bool = false,
         artistNames: [String] = [],
@@ -149,7 +149,7 @@ public struct Track: Codable, Hashable, Identifiable, Sendable {
         artistTemplate = try? c.decodeIfPresent(String.self, forKey: .artistTemplate)
         condition = try? c.decodeIfPresent(String.self, forKey: .condition)
         explicit = try c.decodeDefault(Bool.self, forKey: .explicit, default: false)
-        lyrics = try? c.decodeIfPresent(AnyCodable.self, forKey: .lyrics)
+        lyrics = try? c.decodeIfPresent(Bool.self, forKey: .lyrics)
         zchan = try? c.decodeIfPresent(String.self, forKey: .zchan)
         hasFlac = try c.decodeDefault(Bool.self, forKey: .hasFlac, default: false)
         artistNames = try c.decodeArray([String].self, forKey: .artistNames)

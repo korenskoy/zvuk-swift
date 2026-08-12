@@ -1,0 +1,107 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getAudioBook($ids: [ID!]!, $withChapters: Boolean = false) {
+  getBooks(ids: $ids) {
+    ageLimit
+    availability
+    collectionItemData {
+      itemStatus
+    }
+    genreBisacDetails {
+      code
+      genreBisacRu
+      categoryLvl1Ru
+      categoryLvl2Ru
+    }
+    bookAuthors {
+      getAuthorsCursorBooks {
+        books {
+          id
+          title
+          image {
+            src
+          }
+          mark
+          explicit
+          collectionItemData {
+            itemStatus
+          }
+        }
+      }
+      id
+      name
+      rname
+      image {
+        src
+        palette
+        paletteBottom
+      }
+      description
+      collectionItemData {
+        itemStatus
+      }
+    }
+    childParam
+    condition
+    copyright
+    dataQuality
+    description
+    explicit
+    fullDuration
+    mark
+    genres {
+      id
+      name
+      visible
+    }
+    id
+    image {
+      src
+      palette
+    }
+    mediaContentCount
+    performers {
+      id
+      name
+      rname
+    }
+    playCount
+    publicationDate
+    publisher {
+      id
+      publisherName
+      publisherBrand
+    }
+    serialName
+    title
+    chapters @include(if: $withChapters) {
+      ...PlayerChapterData
+    }
+    __typename
+  }
+}
+
+fragment PlayerChapterData on Chapter {
+  id
+  title
+  availability
+  duration
+  childParamV2
+  image {
+    src
+  }
+  book {
+    id
+    title
+    mark
+    explicit
+  }
+  bookAuthors {
+    id
+    rname
+    image {
+      src
+    }
+  }
+  position
+  __typename
+}

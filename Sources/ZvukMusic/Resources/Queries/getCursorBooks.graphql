@@ -1,0 +1,28 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getCursorBooks($ids: [ID!]!, $cursor: String = null, $limit: Int = 100) {
+  getBookAuthors(ids: $ids) {
+    getAuthorsCursorBooks(limit: $limit, cursor: $cursor) {
+      books {
+        id
+        title
+        publicationDate
+        image {
+          src
+        }
+        publisher {
+          publisherBrand
+        }
+        fullDuration
+        mark
+        explicit
+        collectionItemData {
+          itemStatus
+        }
+      }
+      pageInfo: page_info {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}

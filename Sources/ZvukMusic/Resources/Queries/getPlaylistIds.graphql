@@ -1,0 +1,9 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPlaylistIds {
+  collection {
+    playlists {
+      id
+      userId
+    }
+  }
+}

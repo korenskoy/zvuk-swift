@@ -1,0 +1,144 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getBlendedSearch($limit: Int = 100, $query: String!) {
+  blendedSearch(limit: $limit, query: $query) {
+    scoreVerticals
+    page {
+      content {
+        ... on Artist {
+          id
+          title
+          image {
+            src
+            palette
+          }
+          mark
+          __typename
+        }
+        ... on Book {
+          bookAuthors {
+            id
+            rname
+          }
+          id
+          title
+          image {
+            src
+            palette
+          }
+          mark
+          explicit
+          __typename
+        }
+        ... on BookAuthor {
+          id
+          rname
+          image {
+            src
+            palette
+          }
+          mark
+          image {
+            src
+          }
+          __typename
+        }
+        ... on Episode {
+          id
+          title
+          explicit
+          mark
+          image {
+            src
+            palette
+            paletteBottom
+          }
+          podcast {
+            updatedDate
+            authors {
+              id
+              name
+            }
+          }
+          __typename
+          publicationDate
+        }
+        ... on Playlist {
+          id
+          title
+          description
+          image {
+            src
+          }
+          profile {
+            id
+            name
+          }
+          tracks(limit: 4) {
+            id
+            release {
+              id
+              image {
+                src
+              }
+            }
+          }
+          trackCount
+          __typename
+        }
+        ... on Podcast {
+          id
+          title
+          updatedDate
+          explicit
+          mark
+          image {
+            src
+            palette
+            paletteBottom
+          }
+          authors {
+            id
+            name
+          }
+          __typename
+          episodes(limit: 1) {
+            publicationDate
+          }
+        }
+        ... on Release {
+          id
+          title
+          mark
+          type
+          image {
+            src
+            palette
+          }
+          artists {
+            id
+            title
+          }
+          explicit
+          __typename
+        }
+        ... on Track {
+          id
+          title
+          mark
+          release {
+            image {
+              src
+              palette
+            }
+          }
+          artists {
+            id
+            title
+          }
+          explicit
+          __typename
+        }
+      }
+    }
+  }
+}

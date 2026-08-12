@@ -57,6 +57,8 @@ public enum ZvukError: Error, LocalizedError, Sendable {
 }
 
 /// Detail of a GraphQL error.
+// @unchecked: `extensions` is immutable and holds only JSONSerialization output
+// (value types and NSNull), never mutable reference types.
 public struct GraphQLErrorDetail: @unchecked Sendable {
     public let message: String
     public let extensions: [String: Any]?

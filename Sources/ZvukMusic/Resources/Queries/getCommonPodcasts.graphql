@@ -1,0 +1,24 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getCommonPodcasts($ids: [ID!]!) {
+  getPodcasts(ids: $ids) {
+    id
+    title
+    updatedDate
+    explicit
+    mark
+    type
+    image {
+      src
+      palette
+      paletteBottom
+    }
+    authors {
+      id
+      name
+    }
+    __typename
+    episodes(limit: 1, order_type: newest) {
+      publicationDate
+    }
+  }
+}

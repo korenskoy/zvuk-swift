@@ -1,0 +1,10 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getSearchAuthorIds($query: String, $limit: Int = 1) {
+  search(query: $query) {
+    bookAuthors(limit: $limit) {
+      items {
+        id
+      }
+    }
+  }
+}

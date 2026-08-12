@@ -113,4 +113,34 @@ public enum WavePopularity: Int, Codable, Sendable {
 public enum RadioEntityType: String, Codable, Sendable {
     case artist = "ARTIST"
     case track = "TRACK"
+    case release = "RELEASE"
+    case playlist = "PLAYLIST"
+}
+
+/// Sort order for podcast episode pages.
+///
+/// The web client keeps `"DESC"`/`"ASC"` internally and translates them to
+/// these values before querying, so the raw values are neither direction words
+/// nor SCREAMING_CASE.
+public enum EpisodeOrder: String, Codable, Sendable {
+    /// Newest episodes first.
+    case newest
+    /// Oldest episodes first.
+    case oldest
+}
+
+/// Item type filter for ``ZvukClient/getRecentlyPlayed(limit:offset:itemTypes:isKidContent:)``.
+///
+/// Raw values mirror the GraphQL type names of the `UnionRecentMediaContent`
+/// members, so they are PascalCase rather than the usual SCREAMING_CASE.
+public enum RecentItemType: String, Codable, Sendable {
+    case artist = "Artist"
+    case release = "Release"
+    case playlist = "Playlist"
+    case podcast = "Podcast"
+    case book = "Book"
+    case radioStation = "RadioStation"
+    case personalWave = "PersonalWave"
+    case editorialWave = "EditorialWave"
+    case favoriteTracks = "FavoriteTracks"
 }

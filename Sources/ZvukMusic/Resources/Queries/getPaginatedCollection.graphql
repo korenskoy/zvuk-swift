@@ -1,0 +1,45 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPaginatedCollection($limit: Int = 30, $after: String = null) {
+  paginatedCollection {
+    tracks(pagination: {first: $limit, after: $after}) {
+      items {
+        ...PlayerTrackData
+      }
+      page {
+        endCursor
+      }
+    }
+  }
+}
+
+fragment PlayerTrackData on Track {
+  id
+  title
+  lyrics
+  hasFlac
+  duration
+  explicit
+  availability
+  artistTemplate
+  childParam
+  mark
+  artists {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  release {
+    id
+    title
+    image {
+      src
+      palette
+    }
+  }
+  zchan
+  __typename
+}

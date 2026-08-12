@@ -1,0 +1,18 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getRelatedArtistsSimple($id: ID!, $limitArtists: PositiveInt!) {
+  getArtists(ids: [$id]) {
+    title
+    image {
+      src
+    }
+  }
+  relatedArtists(artist_id: $id, limit: $limitArtists) {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+}

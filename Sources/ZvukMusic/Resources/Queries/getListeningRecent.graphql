@@ -1,0 +1,145 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getListeningRecent($limit: Int = 30, $offset: Int = 0, $itemType: [RecentItemType!], $isKidContent: Boolean) {
+  listeningRecentV1(limit: $limit, offset: $offset, itemType: $itemType, isKidContent: $isKidContent) {
+    lastListeningDttm
+    mediaContent {
+      __typename
+      ... on Artist {
+        id
+        title
+        isWave
+        image {
+          src
+          palette
+        }
+        mark
+      }
+      ... on Podcast {
+        id
+        title
+        explicit
+        updatedDate
+        image {
+          src
+        }
+        mark
+        podcastAuthors: authors {
+          name
+          id
+        }
+      }
+      ... on Book {
+        id
+        title
+        explicit
+        bookAuthors {
+          rname
+          id
+        }
+        image {
+          src
+        }
+        mark
+      }
+      ... on Playlist {
+        id
+        title
+        description
+        coverV1 {
+          src
+        }
+        image {
+          picUrlBig
+          src
+        }
+        profile {
+          name
+          id
+        }
+        tracks(limit: 4) {
+          id
+          title
+          release {
+            image {
+              src
+            }
+          }
+        }
+      }
+      ... on FavoriteTracks {
+        id
+      }
+      ... on Release {
+        id
+        title
+        explicit
+        artists {
+          title
+          id
+        }
+        date
+        image {
+          src
+        }
+        type
+        mark
+      }
+      ... on RadioArtist {
+        id
+        artist {
+          id
+          title
+          image {
+            src
+            palette
+          }
+        }
+      }
+      ... on PersonalWave {
+        id
+      }
+      ... on RadioTrack {
+        id
+        track {
+          id
+          title
+          release {
+            image {
+              src
+              palette
+            }
+          }
+        }
+      }
+      ... on EditorialWave {
+        id
+        wave {
+          title
+          description
+          image {
+            src
+          }
+        }
+      }
+      ... on RadioStation {
+        id
+        name
+        radioLogoBlack {
+          png
+          png
+        }
+        radioLogoColored {
+          png
+          svg
+        }
+        radioLogoWhite {
+          png
+          svg
+        }
+        metaDataUrl
+        source
+        __typename
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getCommonAudioBook($ids: [ID!]!, $withChapters: Boolean = false) {
+  getBooks(ids: $ids) {
+    bookAuthors {
+      id
+      name
+      rname
+    }
+    id
+    title
+    description
+    image {
+      src
+      palette
+    }
+    mark
+    explicit
+    __typename
+    publicationDate
+    fullDuration
+    chapters @include(if: $withChapters) {
+      ...PlayerChapterData
+    }
+  }
+}
+
+fragment PlayerChapterData on Chapter {
+  id
+  title
+  availability
+  duration
+  childParamV2
+  image {
+    src
+  }
+  book {
+    id
+    title
+    mark
+    explicit
+  }
+  bookAuthors {
+    id
+    rname
+    image {
+      src
+    }
+  }
+  position
+  __typename
+}

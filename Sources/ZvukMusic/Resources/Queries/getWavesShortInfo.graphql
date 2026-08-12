@@ -1,0 +1,13 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getWavesShortInfo($ids: [ID!]!) {
+  wave {
+    waves(ids: $ids) {
+      id
+      description
+      title
+      image {
+        src
+      }
+    }
+  }
+}

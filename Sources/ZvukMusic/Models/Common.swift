@@ -123,6 +123,9 @@ public struct Animation: Codable, Hashable, Sendable {
 }
 
 /// Type-erased Codable value for arbitrary JSON.
+// @unchecked: `value` is immutable and decoding only ever stores value types
+// (Bool/Int/Double/String/NSNull and arrays/dictionaries of those). Callers of
+// `init(_:)` must not pass mutable reference types.
 public struct AnyCodable: Codable, Hashable, @unchecked Sendable {
     public let value: Any
 

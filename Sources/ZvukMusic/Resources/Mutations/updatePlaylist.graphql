@@ -1,0 +1,8 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+mutation updatePlaylist($id: ID!, $isPublic: Boolean!, $items: [PlaylistItem!] = [], $name: String!) {
+  playlist {
+    updateV1(id: $id, isPublic: $isPublic, items: $items, name: $name) {
+      id
+    }
+  }
+}

@@ -1,0 +1,44 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query artistCompilationsWithProfile($ids: [ID!]!, $limit: Int = 100, $cursor: String = null) {
+  getArtists(ids: $ids) {
+    id
+    title
+    image {
+      src
+    }
+    discography {
+      compilations(limit: $limit, cursor: $cursor) {
+        releases {
+          id
+          title
+          type
+          image {
+            src
+          }
+          artists {
+            id
+            title
+          }
+          tracks {
+            id
+            title
+            artists {
+              id
+              title
+            }
+            duration
+            explicit
+            artistTemplate
+          }
+          artistTemplate
+          date
+          explicit
+        }
+        pageInfo: page_info {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+  }
+}

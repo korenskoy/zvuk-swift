@@ -58,7 +58,6 @@ public struct Podcast: Codable, Hashable, Identifiable, Sendable {
     public let type: String?
     public let image: Image?
     public let authors: [PodcastAuthor]
-    public let episodes: [AnyCodable]
     public let collectionItemData: CollectionItem?
 
     public init(
@@ -71,7 +70,6 @@ public struct Podcast: Codable, Hashable, Identifiable, Sendable {
         type: String? = nil,
         image: Image? = nil,
         authors: [PodcastAuthor] = [],
-        episodes: [AnyCodable] = [],
         collectionItemData: CollectionItem? = nil
     ) {
         self.id = id
@@ -83,7 +81,6 @@ public struct Podcast: Codable, Hashable, Identifiable, Sendable {
         self.type = type
         self.image = image
         self.authors = authors
-        self.episodes = episodes
         self.collectionItemData = collectionItemData
     }
 
@@ -103,13 +100,12 @@ public struct Podcast: Codable, Hashable, Identifiable, Sendable {
         type = try? c.decodeIfPresent(String.self, forKey: .type)
         image = try? c.decodeIfPresent(Image.self, forKey: .image)
         authors = try c.decodeArray([PodcastAuthor].self, forKey: .authors)
-        episodes = try c.decodeArray([AnyCodable].self, forKey: .episodes)
         collectionItemData = try? c.decodeIfPresent(CollectionItem.self, forKey: .collectionItemData)
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, title, explicit, description, updatedDate, availability
-        case type, image, authors, episodes, collectionItemData
+        case type, image, authors, collectionItemData
     }
 }
 

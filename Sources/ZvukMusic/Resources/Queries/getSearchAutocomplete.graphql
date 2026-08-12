@@ -1,0 +1,6 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getSearchAutocomplete($query: String!, $limit: Int = 5) {
+  searchAutocomplete(limit: $limit, query: $query) {
+    content
+  }
+}

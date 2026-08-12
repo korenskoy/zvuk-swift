@@ -1,5 +1,5 @@
 query getHiddenTracks {
-  hidden_collection {
+  hiddenCollection: hidden_collection {
     tracks {
       id
       collectionLastModified

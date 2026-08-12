@@ -1,0 +1,28 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getArtistReleases($ids: [ID!]!, $limit: Int = 12, $includeTypes: [String!] = null, $excludeTypes: [String!] = null, $cursor: String = null) {
+  getArtists(ids: $ids) {
+    releasesPage: getCursorReleases(limit: $limit, cursor: $cursor, include_types: $includeTypes, exclude_types: $excludeTypes) {
+      pageInfo: page_info {
+        endCursor
+        hasNextPage
+      }
+      releases {
+        id
+        title
+        artists {
+          id
+          title
+        }
+        type
+        date
+        mark
+        image {
+          src
+          palette
+        }
+        explicit
+        __typename
+      }
+    }
+  }
+}

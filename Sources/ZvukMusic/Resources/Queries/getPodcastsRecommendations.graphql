@@ -1,0 +1,26 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPodcastsRecommendations($first: Int!, $recType: RecPodcastTypeEnum!, $skip: Int! = 0) {
+  recommendation {
+    podcasts(first: $first, recType: $recType, skip: $skip) {
+      id
+      title
+      description
+      authors {
+        id
+        name
+      }
+      episodes(limit: 1, order_type: newest) {
+        publicationDate
+      }
+      image {
+        src
+        palette
+      }
+      mark
+      explicit
+      collectionItemData {
+        itemStatus
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getProfileCollection($limit: PositiveInt = 10, $relatedArtistsLimit: Int = 10, $limitTracks: Int = 4, $uniqueReleases: Boolean = false) {
+  collection {
+    artists(limit: $limit) {
+      id
+      title
+      relatedArtists(limit: $relatedArtistsLimit) {
+        id
+        title
+        isWave
+        image {
+          src
+        }
+      }
+      isWave
+    }
+    tracks(limit: $limit) {
+      id
+      title
+      isWave
+      release {
+        image {
+          src
+        }
+      }
+    }
+    playlists {
+      id
+      title
+      image {
+        src
+      }
+      profileId: userId
+      description
+      ftracksV1(first: $limitTracks, uniqueReleases: $uniqueReleases) {
+        release {
+          image {
+            src
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+mutation createMigration($links: [String!]!) {
+  migration {
+    createMigration(links: $links) {
+      retryTime
+      migrationIds
+      status
+    }
+  }
+}

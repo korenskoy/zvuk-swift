@@ -1,0 +1,16 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getRecommendationProfile {
+  recommendationProfile {
+    getRecCampaignV1(id: "partners") {
+      userId
+      id
+      values {
+        by_in_samokat: valueFloat(name: "by_in_samokat")
+        by_in_kuper: valueFloat(name: "by_in_kuper")
+        by_in_okko: valueFloat(name: "by_in_okko")
+        by_in_megamarket: valueFloat(name: "by_in_megamarket")
+        by_in_sbermobile: valueFloat(name: "by_in_sbermobile")
+      }
+    }
+  }
+}

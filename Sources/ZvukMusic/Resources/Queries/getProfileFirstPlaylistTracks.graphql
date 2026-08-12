@@ -1,0 +1,46 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getProfileFirstPlaylistTracks($ids: [ID!]!, $playlistTracksLimit: Int = 10, $playlistTracksOffset: Int = 0) {
+  profiles(ids: $ids) {
+    playlistsV1 {
+      paginated(pagination: {first: 1}) {
+        playlists {
+          tracks(limit: $playlistTracksLimit, offset: $playlistTracksOffset) {
+            ...PlayerTrackData
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment PlayerTrackData on Track {
+  id
+  title
+  lyrics
+  hasFlac
+  duration
+  explicit
+  availability
+  artistTemplate
+  childParam
+  mark
+  artists {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  release {
+    id
+    title
+    image {
+      src
+      palette
+    }
+  }
+  zchan
+  __typename
+}

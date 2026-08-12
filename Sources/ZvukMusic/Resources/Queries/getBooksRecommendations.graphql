@@ -1,0 +1,40 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getBooksRecommendations($first: Int!, $recType: RecBookTypeEnum!, $skip: Int! = 0, $withAuthors: Boolean = false) {
+  recommendation {
+    books(first: $first, recType: $recType, skip: $skip) {
+      __typename
+      id
+      title
+      description
+      publicationDate
+      fullDuration
+      bookAuthors {
+        id
+        name
+        rname
+      }
+      image {
+        src
+        palette
+      }
+      mark
+      explicit
+      collectionItemData {
+        itemStatus
+      }
+    }
+    authors(first: $first, recType: AUTHOR, skip: $skip) @include(if: $withAuthors) {
+      __typename
+      id
+      rname
+      image {
+        src
+        palette
+      }
+      mark
+      collectionItemData {
+        itemStatus
+      }
+    }
+  }
+}

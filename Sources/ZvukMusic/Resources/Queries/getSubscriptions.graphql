@@ -1,0 +1,41 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getSubscriptions($status: [ActualUserSubscriptionStatus!]) {
+  subscriptions(status: $status) {
+    mainSubscription {
+      id
+      name
+      isPrime
+      status
+      startDate
+      expirationDate
+      isTrial
+      category
+      platform
+      options
+      subscriptionType {
+        price
+      }
+      price
+      ageCategory
+      hasRecurrent
+    }
+    secondarySubscriptions {
+      id
+      name
+      isPrime
+      status
+      startDate
+      expirationDate
+      isTrial
+      category
+      platform
+      options
+      subscriptionType {
+        price
+      }
+      price
+      ageCategory
+      hasRecurrent
+    }
+  }
+}

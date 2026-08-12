@@ -1,0 +1,8 @@
+# Старый вариант мутации: возвращает id строкой, а не объектом.
+# Веб-клиент перешёл на createV1 (см. createPlaylist.graphql), но этот вариант
+# по-прежнему обслуживает ZvukClient.createPlaylist(_:trackIds:).
+mutation createPlayList($items: [PlaylistItem!]!, $name: String!) {
+  playlist {
+    create(items: $items, name: $name)
+  }
+}

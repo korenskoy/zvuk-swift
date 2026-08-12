@@ -1,0 +1,35 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getCollectionIds {
+  collection {
+    playlists {
+      id
+    }
+    releases {
+      id
+    }
+    artists {
+      id
+    }
+    podcasts {
+      id
+    }
+    episodes {
+      id
+    }
+    books {
+      id
+    }
+    bookAuthors {
+      id
+    }
+    chapters {
+      id
+    }
+    tracks {
+      id
+    }
+    profiles {
+      id
+    }
+  }
+}

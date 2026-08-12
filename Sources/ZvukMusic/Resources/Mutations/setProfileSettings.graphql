@@ -1,0 +1,6 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+mutation setProfileSettings($name: String, $description: String) {
+  profile {
+    update(description: $description, name: $name)
+  }
+}

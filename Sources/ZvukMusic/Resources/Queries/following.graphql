@@ -1,0 +1,20 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query following($id: [ID!]!, $cursor: String, $followingLimit: Int = 30) {
+  profiles(ids: $id) {
+    paginatedCollection {
+      profiles(pagination: {first: $followingLimit, after: $cursor}) {
+        items {
+          id
+          name
+          image {
+            src
+          }
+        }
+        page {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+}

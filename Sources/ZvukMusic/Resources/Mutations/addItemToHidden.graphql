@@ -1,5 +1,5 @@
 mutation addItemToHidden($id: ID!, $type: CollectionItemType!) {
-  hidden_collection {
+  hiddenCollection: hidden_collection {
     addItem(id: $id, type: $type)
   }
 }

@@ -1,0 +1,35 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPlaylistsProfile($ids: [ID!]!, $limit: Int = 1, $limitTracks: Int = 3, $uniqueReleases: Boolean = true, $after: String = null) {
+  profiles(ids: $ids) {
+    id
+    playlistsV1 {
+      paginated(pagination: {first: $limit, after: $after}) {
+        playlists {
+          id
+          title
+          image {
+            src
+            picUrlBig
+          }
+          coverV1 {
+            src
+          }
+          profileId: userId
+          description
+          ftracks(first: $limitTracks, uniqueReleases: $uniqueReleases) {
+            release {
+              image {
+                src
+              }
+            }
+          }
+        }
+        page {
+          endCursor
+          hasNextPage
+        }
+      }
+      totalCount
+    }
+  }
+}

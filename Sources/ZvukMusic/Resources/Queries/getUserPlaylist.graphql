@@ -1,0 +1,29 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getUserPlaylist($limit: Int = 6, $offset: String = null) {
+  getUserPlaylists {
+    paginated(pagination: {first: $limit, after: $offset}) {
+      playlists {
+        id
+        title
+        trackCount
+        coverV1 {
+          src
+        }
+        tracks {
+          id
+        }
+        ftracksV1(first: 3) {
+          release {
+            image {
+              src
+            }
+          }
+        }
+      }
+      page {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+}

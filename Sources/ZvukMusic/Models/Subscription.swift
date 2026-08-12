@@ -24,9 +24,7 @@ public struct PaymentDetails: Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case priceType = "price_type"
-        case externalSubscriptionId = "external_subscription_id"
-        case isOwner = "is_owner"
+        case priceType, externalSubscriptionId, isOwner
     }
 }
 
@@ -118,12 +116,7 @@ public struct Subscription: Codable, Hashable, Identifiable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id, status, name, price, partner, duration, title, start, expiration
-        case isTrial = "is_trial"
-        case isRecurrent = "is_recurrent"
-        case paymentDetails = "payment_details"
-        case planId = "plan_id"
-        case planPrice = "plan_price"
-        case servicesAvailable = "services_available"
+        case isTrial, isRecurrent, paymentDetails, planId, planPrice, servicesAvailable
     }
 }
 
@@ -144,7 +137,6 @@ public struct SubscriptionResult: Codable, Hashable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case subscription
-        case isSuspended = "is_suspended"
+        case subscription, isSuspended
     }
 }

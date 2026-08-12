@@ -1,0 +1,36 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getProfilePodcasts($ids: [ID!]!, $cursor: String, $limit: Int, $withTotal: Boolean = false) {
+  profiles(ids: $ids) {
+    paginatedCollection {
+      podcasts(pagination: {after: $cursor, first: $limit}) {
+        items {
+          id
+          title
+          updatedDate
+          authors {
+            name
+            id
+            mark
+          }
+          image {
+            src
+          }
+          mark
+          explicit
+          episodes(limit: 1) {
+            publicationDate
+          }
+        }
+        page {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+    collection @include(if: $withTotal) {
+      podcasts {
+        id
+      }
+    }
+  }
+}

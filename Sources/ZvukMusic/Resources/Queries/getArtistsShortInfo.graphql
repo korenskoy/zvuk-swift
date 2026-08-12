@@ -1,0 +1,16 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getArtistsShortInfo($ids: [ID!]!, $withlikesCount: Boolean = false) {
+  getArtists(ids: $ids) {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+    collectionItemData @include(if: $withlikesCount) {
+      likesCount
+    }
+    __typename
+  }
+}

@@ -17,7 +17,8 @@ import Foundation
 /// let client = ZvukClient(token: "your_token")
 /// ```
 public final class ZvukClient: Sendable {
-    private let request: Request
+    // Internal, not private: методы API вынесены в расширения в отдельных файлах.
+    let request: Request
     private let token: String
     private let decoder: JSONDecoder
 
@@ -42,7 +43,10 @@ public final class ZvukClient: Sendable {
         rateLimit: Int? = nil
     ) {
         self.token = token
-        self.decoder = JSONDecoder()
+        // REST responses are snake_case; GraphQL keys are camelCase already and pass through unchanged.
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        self.decoder = decoder
 
         let throttler = rateLimit.map { Throttler(rateLimit: $0) }
         self.request = Request(
@@ -56,12 +60,12 @@ public final class ZvukClient: Sendable {
 
     // MARK: - Helpers
 
-    private func decode<T: Decodable>(_ type: T.Type, from dict: Any) throws -> T {
+    func decode<T: Decodable>(_ type: T.Type, from dict: Any) throws -> T {
         let data = try JSONSerialization.data(withJSONObject: dict)
         return try decoder.decode(T.self, from: data)
     }
 
-    private func decodeList<T: Decodable>(_ type: T.Type, from array: Any) throws -> [T] {
+    func decodeList<T: Decodable>(_ type: T.Type, from array: Any?) throws -> [T] {
         guard let arr = array as? [Any] else { return [] }
         let filtered = arr.filter { !($0 is NSNull) }
         guard !filtered.isEmpty else { return [] }
@@ -299,7 +303,7 @@ public final class ZvukClient: Sendable {
         let gql = try GraphQLLoader.loadQuery("getTracks")
         let result = try await request.graphql(
             query: gql, operationName: "getTracks", variables: ["ids": trackIds])
-        return try decodeList(Track.self, from: result["getTracks"] as Any)
+        return try decodeList(Track.self, from: result["getTracks"])
     }
 
     /// Get a single track by ID.
@@ -324,7 +328,7 @@ public final class ZvukClient: Sendable {
                 "withReleases": withReleases,
             ]
         )
-        return try decodeList(Track.self, from: result["getTracks"] as Any)
+        return try decodeList(Track.self, from: result["getTracks"])
     }
 
     /// Get streaming URLs for tracks.
@@ -390,7 +394,7 @@ public final class ZvukClient: Sendable {
             operationName: "getReleases",
             variables: ["ids": releaseIds, "relatedLimit": relatedLimit]
         )
-        return try decodeList(Release.self, from: result["getReleases"] as Any)
+        return try decodeList(Release.self, from: result["getReleases"])
     }
 
     /// Get a single release by ID.
@@ -431,7 +435,7 @@ public final class ZvukClient: Sendable {
                 "withDescription": withDescription,
             ]
         )
-        return try decodeList(Artist.self, from: result["getArtists"] as Any)
+        return try decodeList(Artist.self, from: result["getArtists"])
     }
 
     /// Get a single artist by ID.
@@ -469,7 +473,7 @@ public final class ZvukClient: Sendable {
         let gql = try GraphQLLoader.loadQuery("getPlaylists")
         let result = try await request.graphql(
             query: gql, operationName: "getPlaylists", variables: ["ids": playlistIds])
-        return try decodeList(Playlist.self, from: result["getPlaylists"] as Any)
+        return try decodeList(Playlist.self, from: result["getPlaylists"])
     }
 
     /// Get a single playlist by ID with full track details.
@@ -494,7 +498,7 @@ public final class ZvukClient: Sendable {
         let gql = try GraphQLLoader.loadQuery("getShortPlaylist")
         let result = try await request.graphql(
             query: gql, operationName: "getShortPlaylist", variables: ["ids": playlistIds])
-        return try decodeList(SimplePlaylist.self, from: result["getPlaylists"] as Any)
+        return try decodeList(SimplePlaylist.self, from: result["getPlaylists"])
     }
 
     /// Get playlist tracks with pagination.
@@ -509,15 +513,14 @@ public final class ZvukClient: Sendable {
             operationName: "getPlaylistTracks",
             variables: ["id": playlistId, "limit": limit, "offset": offset]
         )
-        return try decodeList(SimpleTrack.self, from: result["playlistTracks"] as Any)
+        return try decodeList(SimpleTrack.self, from: result["playlistTracks"])
     }
 
     /// Create a playlist.
     /// - Returns: Created playlist ID.
     public func createPlaylist(_ name: String, trackIds: [String]? = nil) async throws -> String {
-        let gql = try GraphQLLoader.loadQuery("createPlaylist")
-        let items: [[String: String]] =
-            trackIds?.map { ["type": "track", "item_id": $0] } ?? []
+        let gql = try GraphQLLoader.loadQuery("createPlaylistLegacy")
+        let items = Self.playlistItems(trackIds ?? [])
         let result = try await request.graphql(
             query: gql, operationName: "createPlayList", variables: ["name": name, "items": items])
         let playlist = result["playlist"] as? [String: Any] ?? [:]
@@ -548,7 +551,7 @@ public final class ZvukClient: Sendable {
     /// Add tracks to a playlist.
     public func addTracksToPlaylist(_ playlistId: String, trackIds: [String]) async throws -> Bool {
         let gql = try GraphQLLoader.loadQuery("addTracksToPlaylist")
-        let items = trackIds.map { ["type": "track", "item_id": $0] }
+        let items = Self.playlistItems(trackIds)
         let result = try await request.graphql(
             query: gql,
             operationName: "addTracksToPlaylist",
@@ -566,7 +569,7 @@ public final class ZvukClient: Sendable {
         isPublic: Bool? = nil
     ) async throws -> Bool {
         let gql = try GraphQLLoader.loadQuery("updataPlaylist")
-        let items = trackIds.map { ["type": "track", "item_id": $0] }
+        let items = Self.playlistItems(trackIds)
         let variables: [String: Any] = [
             "id": playlistId,
             "items": items,
@@ -611,7 +614,7 @@ public final class ZvukClient: Sendable {
         let gql = try GraphQLLoader.loadQuery("synthesisPlaylist")
         let result = try await request.graphql(
             query: gql, operationName: "synthesisPlaylist", variables: ["ids": ids])
-        return try decodeList(SynthesisPlaylist.self, from: result["synthesisPlaylist"] as Any)
+        return try decodeList(SynthesisPlaylist.self, from: result["synthesisPlaylist"])
     }
 
     /// Get editorial (curated) playlist IDs.
@@ -627,7 +630,7 @@ public final class ZvukClient: Sendable {
         let gql = try GraphQLLoader.loadQuery("getPodcasts")
         let result = try await request.graphql(
             query: gql, operationName: "getPodcasts", variables: ["ids": podcastIds])
-        return try decodeList(Podcast.self, from: result["getPodcasts"] as Any)
+        return try decodeList(Podcast.self, from: result["getPodcasts"])
     }
 
     /// Get a single podcast by ID.
@@ -641,7 +644,7 @@ public final class ZvukClient: Sendable {
         let gql = try GraphQLLoader.loadQuery("getEpisodes")
         let result = try await request.graphql(
             query: gql, operationName: "getEpisodes", variables: ["ids": episodeIds])
-        return try decodeList(Episode.self, from: result["getEpisodes"] as Any)
+        return try decodeList(Episode.self, from: result["getEpisodes"])
     }
 
     /// Get a single episode by ID.
@@ -673,7 +676,7 @@ public final class ZvukClient: Sendable {
             variables: ["orderBy": orderBy.rawValue, "orderDirection": direction.rawValue]
         )
         let collection = result["collection"] as? [String: Any] ?? [:]
-        return try decodeList(Track.self, from: collection["tracks"] as Any)
+        return try decodeList(Track.self, from: collection["tracks"])
     }
 
     /// Get user's playlists from collection.
@@ -682,7 +685,7 @@ public final class ZvukClient: Sendable {
         let result = try await request.graphql(
             query: gql, operationName: "userPlaylists", variables: [:])
         let collection = result["collection"] as? [String: Any] ?? [:]
-        return try decodeList(CollectionItem.self, from: collection["playlists"] as Any)
+        return try decodeList(CollectionItem.self, from: collection["playlists"])
     }
 
     /// Get user's podcasts with pagination.
@@ -833,7 +836,7 @@ public final class ZvukClient: Sendable {
         let result = try await request.graphql(
             query: gql, operationName: "getHiddenTracks", variables: [:])
         let hidden = result["hiddenCollection"] as? [String: Any] ?? [:]
-        return try decodeList(CollectionItem.self, from: hidden["tracks"] as Any)
+        return try decodeList(CollectionItem.self, from: hidden["tracks"])
     }
 
     /// Hide an item.
@@ -1104,7 +1107,7 @@ public final class ZvukClient: Sendable {
         try await getRadioByEntity(id: trackId, type: .track, limit: limit, cursor: cursor)
     }
 
-    private func getRadioByEntity(
+    func getRadioByEntity(
         id: String,
         type: RadioEntityType,
         limit: Int,

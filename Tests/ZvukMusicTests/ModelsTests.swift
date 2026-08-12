@@ -6,6 +6,13 @@ import Testing
 @Suite("Models")
 struct ModelsTests {
 
+    /// Mirrors ZvukClient's decoder: REST responses are snake_case.
+    private func makeRESTDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return decoder
+    }
+
     // MARK: - Image
 
     @Test func imageGetURL() {
@@ -442,7 +449,7 @@ struct ModelsTests {
             }
             """.data(using: .utf8)!
 
-        let sub = try JSONDecoder().decode(Subscription.self, from: json)
+        let sub = try makeRESTDecoder().decode(Subscription.self, from: json)
         #expect(sub.id == 123)
         #expect(sub.status == "confirmed")
         #expect(sub.partner == "sberprime")
@@ -465,7 +472,7 @@ struct ModelsTests {
             }
             """.data(using: .utf8)!
 
-        let result = try JSONDecoder().decode(SubscriptionResult.self, from: json)
+        let result = try makeRESTDecoder().decode(SubscriptionResult.self, from: json)
         #expect(result.subscription?.isTrial == true)
         #expect(result.isSuspended == false)
     }
@@ -475,7 +482,7 @@ struct ModelsTests {
             {"is_suspended": false}
             """.data(using: .utf8)!
 
-        let result = try JSONDecoder().decode(SubscriptionResult.self, from: json)
+        let result = try makeRESTDecoder().decode(SubscriptionResult.self, from: json)
         #expect(result.subscription == nil)
         #expect(result.isSuspended == false)
     }
@@ -490,7 +497,7 @@ struct ModelsTests {
             }
             """.data(using: .utf8)!
 
-        let info = try JSONDecoder().decode(FeaturedInfo.self, from: json)
+        let info = try makeRESTDecoder().decode(FeaturedInfo.self, from: json)
         #expect(info.closedBanners == ["banner1"])
         #expect(info.targets.count == 5)
     }
@@ -510,7 +517,7 @@ struct ModelsTests {
 
     @Test func featuredInfoEmpty() throws {
         let json = "{}".data(using: .utf8)!
-        let info = try JSONDecoder().decode(FeaturedInfo.self, from: json)
+        let info = try makeRESTDecoder().decode(FeaturedInfo.self, from: json)
         #expect(info.closedBanners.isEmpty)
         #expect(info.targets.isEmpty)
         #expect(info.country == nil)

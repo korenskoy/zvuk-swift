@@ -1,0 +1,103 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query artist($ids: [ID!]!, $withlikesCount: Boolean = false, $withRelatedArtists: Boolean = false, $withPopularTracks: Boolean = false, $withPopularReleases: Boolean = false) {
+  getArtists(ids: $ids) {
+    id
+    title
+    mark
+    description
+    detailedDescription {
+      src
+    }
+    genres {
+      id
+      name
+      rname
+    }
+    image {
+      src
+      palette
+    }
+    releasesPage: getCursorReleases(limit: 11, cursor: null) {
+      pageInfo: page_info {
+        endCursor
+        hasNextPage
+      }
+      releases {
+        id
+        title
+        date
+        type
+        image {
+          src
+          palette
+        }
+        mark
+        explicit
+      }
+    }
+    popularReleases(limit: 1) @include(if: $withPopularReleases) {
+      releases {
+        id
+        title
+        image {
+          src
+          palette
+        }
+        mediaContentCount
+        mark
+        explicit
+        __typename
+      }
+    }
+    popularTracks(limit: 5, offset: 0) @include(if: $withPopularTracks) {
+      ...PlayerTrackData
+    }
+    allTracks: popularTracks(limit: 200, offset: 0) {
+      id
+    }
+    relatedArtists(limit: 10) @include(if: $withRelatedArtists) {
+      id
+      title
+      image {
+        src
+        palette
+      }
+      mark
+    }
+    collectionItemData {
+      likesCount @include(if: $withlikesCount)
+    }
+  }
+}
+
+fragment PlayerTrackData on Track {
+  id
+  title
+  lyrics
+  hasFlac
+  duration
+  explicit
+  availability
+  artistTemplate
+  childParam
+  mark
+  artists {
+    id
+    title
+    image {
+      src
+      palette
+    }
+    mark
+  }
+  release {
+    id
+    title
+    image {
+      src
+      palette
+    }
+  }
+  zchan
+  __typename
+}

@@ -1,0 +1,28 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getMostListenedTrack($ids: [ID!]!) {
+  profiles(ids: $ids) {
+    id
+    userStatistics {
+      status
+      updateDatetime
+      statistics {
+        period
+        data {
+          app
+          topTracksStats {
+            track {
+              id
+              title
+              release {
+                image {
+                  src
+                }
+              }
+            }
+            listeningTime
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getPlaylistInfo($ids: [ID!]!, $first: Int = 3, $uniqueReleases: Boolean = true) {
+  playlists(ids: $ids) {
+    id
+    title
+    description
+    isPublic
+    updated
+    userId
+    childParam
+    hashtags {
+      id
+      name
+    }
+    image {
+      src
+      palette
+      palette_bottom: paletteBottom
+      picUrlBig
+    }
+    coverV1 {
+      src
+    }
+    tracks {
+      id
+    }
+    ftracksV1(first: $first, uniqueReleases: $uniqueReleases) {
+      release {
+        title
+        image {
+          src
+        }
+      }
+    }
+    duration
+    profile {
+      id
+      name
+      image {
+        src
+      }
+    }
+    branded
+    buttons {
+      title
+      action {
+        ... on OpenUrlAction {
+          name
+          url
+        }
+      }
+    }
+    coverV1 {
+      src
+    }
+  }
+}

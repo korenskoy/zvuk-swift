@@ -1,0 +1,30 @@
+# Извлечено из web-клиента zvuk.com v8.6.2
+query getRelatedReleases($ids: [ID!]!, $limit: Int! = 100) {
+  getReleases(ids: $ids) {
+    id
+    related(limit: $limit) {
+      id
+      title
+      searchTitle
+      type
+      date
+      genres {
+        id
+        name
+        shortName
+      }
+      image {
+        src
+        palette
+        paletteBottom
+      }
+      artists {
+        id
+        title
+      }
+      availability
+      artistTemplate
+      mark
+    }
+  }
+}

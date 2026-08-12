@@ -113,8 +113,13 @@ public struct ProfileResult: Codable, Hashable, Sendable {
     }
 
     /// Whether the user is authorized (not anonymous).
+    ///
+    /// The Tiny API answers with `is_registered`; it has never been observed to
+    /// send `is_anonymous`, which is honoured first only for callers that
+    /// construct the model themselves.
     public var isAuthorized: Bool {
-        !(isAnonymous ?? true)
+        if let isAnonymous { return !isAnonymous }
+        return isRegistered ?? false
     }
 }
 

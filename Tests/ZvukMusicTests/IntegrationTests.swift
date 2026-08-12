@@ -4,7 +4,7 @@ import Testing
 @testable import ZvukMusic
 
 /// Shared client factory — gets token once, reuses across all tests.
-private actor SharedClient {
+actor SharedClient {
     static let shared = SharedClient()
     private var client: ZvukClient?
 
