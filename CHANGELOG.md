@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.1] - 2026-08-12
+
+### Fixed
+
+- `RadioStation.source` was typed `String?` while the API answers with an array of stream URLs, so `try?` swallowed the type mismatch and every station arrived without a stream — the field looked permanently empty. It is now `[String]`, with a `streamURL` convenience returning the first entry as a `URL`. All 161 stations in the catalogue carry a playable stream: HLS playlists for most, direct Icecast streams (`.mp3`, `.aacp`, extensionless) for the rest.
+- `getRadioStation.graphql` selected `png` twice on `radioLogoBlack` instead of `png` and `svg`, so that logo's vector variant was always `nil` when fetched by ID.
+
 ## [0.4.0] - 2026-08-12
 
 Coverage of the zvuk.com web client (build v8.6.2). Its GraphQL documents were

@@ -5,7 +5,7 @@ query getRadioStation($ids: [ID!]!) {
     name
     radioLogoBlack {
       png
-      png
+      svg
     }
     radioLogoColored {
       png

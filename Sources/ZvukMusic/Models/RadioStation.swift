@@ -40,8 +40,10 @@ public struct RadioStation: Codable, Hashable, Identifiable, Sendable {
     public let logoWhite: RadioLogo?
     /// URL serving currently-playing metadata for the stream.
     public let metaDataUrl: String?
-    /// Stream URL.
-    public let source: String?
+    /// HLS playlist URLs for the stream, in server order.
+    ///
+    /// Every station observed carries exactly one; ``streamURL`` takes the first.
+    public let source: [String]
 
     public init(
         id: String = "",
@@ -50,7 +52,7 @@ public struct RadioStation: Codable, Hashable, Identifiable, Sendable {
         logoBlack: RadioLogo? = nil,
         logoWhite: RadioLogo? = nil,
         metaDataUrl: String? = nil,
-        source: String? = nil
+        source: [String] = []
     ) {
         self.id = id
         self.name = name
@@ -69,7 +71,12 @@ public struct RadioStation: Codable, Hashable, Identifiable, Sendable {
         logoBlack = try? c.decodeIfPresent(RadioLogo.self, forKey: .logoBlack)
         logoWhite = try? c.decodeIfPresent(RadioLogo.self, forKey: .logoWhite)
         metaDataUrl = try? c.decodeIfPresent(String.self, forKey: .metaDataUrl)
-        source = try? c.decodeIfPresent(String.self, forKey: .source)
+        source = try c.decodeArray([String].self, forKey: .source)
+    }
+
+    /// The station's stream, ready to hand to a player.
+    public var streamURL: URL? {
+        source.first.flatMap(URL.init(string:))
     }
 
     private enum CodingKeys: String, CodingKey {

@@ -29,6 +29,20 @@ struct RadioStationTests {
         #expect(stations.allSatisfy { !$0.id.isEmpty && !$0.name.isEmpty })
     }
 
+    /// `source` — массив, а не строка: пока он был объявлен `String?`,
+    /// `try?` глотал несоответствие типов и станция приходила без потока.
+    /// Поэтому проверяется значение, а не факт разбора.
+    @Test("Radio stations carry a playable stream")
+    func radioStationsHaveStreams() async throws {
+        let stations = try await client.getRadioStations(limit: 30)
+        let withStream = stations.filter { $0.streamURL != nil }
+        #expect(withStream.count == stations.count,
+                "Поток должен быть у каждой станции, а он есть у \(withStream.count) из \(stations.count)")
+        // Форматы разные: HLS-плейлисты у большинства, прямые Icecast-потоки
+        // (.mp3, .aacp, без расширения) у меньшинства. Общее — рабочая http(s)-ссылка.
+        #expect(stations.allSatisfy { $0.streamURL?.scheme?.hasPrefix("http") ?? false })
+    }
+
     @Test("Radio station by ID decodes")
     func radioStationById() async throws {
         let station = try await client.getRadioStation("1")
