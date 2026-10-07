@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.3] - 2026-10-07
+
+### Added
+
+- `Stream.flac` / `StreamUrls.flac`: progressive FLAC URL without DRM, now requested by `getStreamURLs`. `getURL(quality: .flac)` and `bestAvailable` prefer it over `flacdrm`.
+- `getTracks` now requests `hasFlac`, so `Track.hasFlac` reflects the API instead of always being `false`.
+
+### Fixed
+
+- `updatePlaylist` without `name` failed with "Request parameters are incorrect" and silently made the playlist private. Missing `name` / `isPublic` now default to the playlist's current values.
+- `getLikedTracks` documentation states that only track IDs are returned.
+- A request blocked by the anti-bot protection is retried once after warming the session up with a visit to the site root, which lets ServicePipe set its `spid` cookie on the session. A still-blocked retry throws `.botDetected` as before.
+
+(Ports zvuk-music 0.6.3.)
+
 ## [0.4.2] - 2026-10-07
 
 ### Fixed

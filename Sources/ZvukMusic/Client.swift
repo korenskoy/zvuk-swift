@@ -575,12 +575,24 @@ public final class ZvukClient: Sendable {
     }
 
     /// Update a playlist entirely.
+    /// - Parameters:
+    ///   - name: New name; defaults to the playlist's current name.
+    ///   - isPublic: Whether public; defaults to the playlist's current visibility.
     public func updatePlaylist(
         _ playlistId: String,
         trackIds: [String],
         name: String? = nil,
         isPublic: Bool? = nil
     ) async throws -> Bool {
+        var name = name
+        var isPublic = isPublic
+        if name == nil || isPublic == nil {
+            // The API rejects an empty name and would otherwise reset visibility,
+            // so keep the playlist's current values for anything not given.
+            let current = try await getPlaylists([playlistId]).first
+            name = name ?? current?.title ?? ""
+            isPublic = isPublic ?? current?.isPublic ?? false
+        }
         let gql = try GraphQLLoader.loadQuery("updataPlaylist")
         let items = Self.playlistItems(trackIds)
         let variables: [String: Any] = [
@@ -678,6 +690,8 @@ public final class ZvukClient: Sendable {
     }
 
     /// Get liked tracks with sorting.
+    ///
+    /// Returns tracks with only `id` set; fetch details with ``getTracks(_:)``.
     public func getLikedTracks(
         orderBy: OrderBy = .dateAdded,
         direction: OrderDirection = .desc

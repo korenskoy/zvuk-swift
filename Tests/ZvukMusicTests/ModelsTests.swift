@@ -92,6 +92,20 @@ struct ModelsTests {
         #expect(midOnly.bestAvailable.quality == .mid)
     }
 
+    @Test func streamPlainFlacPreferredOverDRM() throws {
+        let both = StreamUrls(mid: "http://mid", flac: "http://flac", flacdrm: "http://drm")
+        #expect(try both.getURL(quality: .flac) == "http://flac")
+        #expect(both.bestAvailable.url == "http://flac")
+
+        let drmOnly = StreamUrls(mid: "http://mid", flacdrm: "http://drm")
+        #expect(try drmOnly.getURL(quality: .flac) == "http://drm")
+
+        let json = Data(#"{"expire": "2024-01-16T12:00:00", "expireDelta": 86400, "mid": "http://mid", "flac": "http://flac.mp4"}"#.utf8)
+        let stream = try makeRESTDecoder().decode(Stream.self, from: json)
+        #expect(stream.flac == "http://flac.mp4")
+        #expect(stream.bestAvailable == (.flac, "http://flac.mp4"))
+    }
+
     // MARK: - CollectionItem
 
     @Test func collectionItemIsLiked() {

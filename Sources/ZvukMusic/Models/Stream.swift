@@ -6,12 +6,15 @@ public struct StreamUrls: Codable, Hashable, Sendable {
     public let mid: String
     /// 320kbps MP3 URL (requires subscription).
     public let high: String?
+    /// Progressive FLAC URL without DRM (requires subscription).
+    public let flac: String?
     /// FLAC URL with DRM (requires subscription).
     public let flacdrm: String?
 
-    public init(mid: String = "", high: String? = nil, flacdrm: String? = nil) {
+    public init(mid: String = "", high: String? = nil, flac: String? = nil, flacdrm: String? = nil) {
         self.mid = mid
         self.high = high
+        self.flac = flac
         self.flacdrm = flacdrm
     }
 
@@ -19,10 +22,11 @@ public struct StreamUrls: Codable, Hashable, Sendable {
     public func getURL(quality: Quality = .high) throws -> String {
         switch quality {
         case .flac:
-            guard let flacdrm else {
+            // Plain FLAC plays anywhere; the DRM variant is only a fallback.
+            guard let url = flac ?? flacdrm else {
                 throw ZvukError.subscriptionRequired(message: "FLAC quality requires subscription")
             }
-            return flacdrm
+            return url
         case .high:
             guard let high else {
                 throw ZvukError.subscriptionRequired(
@@ -39,7 +43,7 @@ public struct StreamUrls: Codable, Hashable, Sendable {
 
     /// Get the best available quality and its URL.
     public var bestAvailable: (quality: Quality, url: String) {
-        if let flacdrm { return (.flac, flacdrm) }
+        if let url = flac ?? flacdrm { return (.flac, url) }
         if let high { return (.high, high) }
         return (.mid, mid)
     }
@@ -55,6 +59,8 @@ public struct Stream: Codable, Hashable, Sendable {
     public let mid: String
     /// 320kbps MP3 URL.
     public let high: String?
+    /// Progressive FLAC URL without DRM.
+    public let flac: String?
     /// FLAC URL with DRM.
     public let flacdrm: String?
 
@@ -63,12 +69,14 @@ public struct Stream: Codable, Hashable, Sendable {
         expireDelta: Int = 0,
         mid: String = "",
         high: String? = nil,
+        flac: String? = nil,
         flacdrm: String? = nil
     ) {
         self.expire = expire
         self.expireDelta = expireDelta
         self.mid = mid
         self.high = high
+        self.flac = flac
         self.flacdrm = flacdrm
     }
 
@@ -89,13 +97,13 @@ public struct Stream: Codable, Hashable, Sendable {
 
     /// Get URL for the specified quality.
     public func getURL(quality: Quality = .high) throws -> String {
-        let urls = StreamUrls(mid: mid, high: high, flacdrm: flacdrm)
+        let urls = StreamUrls(mid: mid, high: high, flac: flac, flacdrm: flacdrm)
         return try urls.getURL(quality: quality)
     }
 
     /// Get the best available quality and its URL.
     public var bestAvailable: (quality: Quality, url: String) {
-        let urls = StreamUrls(mid: mid, high: high, flacdrm: flacdrm)
+        let urls = StreamUrls(mid: mid, high: high, flac: flac, flacdrm: flacdrm)
         return urls.bestAvailable
     }
 }

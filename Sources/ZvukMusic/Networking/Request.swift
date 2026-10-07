@@ -33,13 +33,31 @@ public struct NetworkLogEntry: Sendable {
     public let responseBody: String?
 }
 
+/// Collapses concurrent session warm-ups into one shared attempt.
+private actor WarmUpCoordinator {
+    private var inFlight: Task<Bool, Never>?
+
+    func run(_ body: @escaping @Sendable () async -> Bool) async -> Bool {
+        if let inFlight { return await inFlight.value }
+        let task = Task(operation: body)
+        inFlight = task
+        let result = await task.value
+        inFlight = nil
+        return result
+    }
+}
+
 /// HTTP request handler for the Zvuk API.
 final class Request: @unchecked Sendable {
     private let session: URLSession
     private var headers: [String: String]
     private let userAgent: String
     private let throttler: Throttler?
+    private let warmUp = WarmUpCoordinator()
     private let lock = NSLock()
+
+    static let siteURL = URL(string: "https://zvuk.com/")!
+    static let siteHost = "zvuk.com"
     private var _onLog: (@Sendable (NetworkLogEntry) -> Void)?
 
     /// Read by in-flight requests on background executors, set from any thread —
@@ -216,7 +234,7 @@ final class Request: @unchecked Sendable {
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
     }
 
-    private func performRequest(_ request: URLRequest) async throws -> Data {
+    private func performRequest(_ request: URLRequest, retrying: Bool = false) async throws -> Data {
         let start = CFAbsoluteTimeGetCurrent()
         let method = request.httpMethod ?? "GET"
         let urlString = request.url?.absoluteString ?? "?"
@@ -246,6 +264,12 @@ final class Request: @unchecked Sendable {
             if Self.isBotBlock(statusCode: statusCode, data: data) {
                 let message = "Request blocked by Zvuk anti-bot protection (HTTP \(statusCode))"
                 emitLog(method: method, url: urlString, statusCode: statusCode, start: start, sent: sentBytes, received: data.count, error: message, requestData: reqBody, responseData: data)
+                // ServicePipe lets the API through once the session carries the cookie a
+                // normal page visit sets. Warm up once and replay the request exactly once;
+                // a still-blocked retry falls through and throws.
+                if !retrying, request.url?.host == Self.siteHost, await warmUpSession() {
+                    return try await performRequest(request, retrying: true)
+                }
                 throw ZvukError.botDetected(message: message)
             }
             let message = parseErrorMessage(from: data) ?? "Unknown error"
@@ -268,6 +292,31 @@ final class Request: @unchecked Sendable {
 
         emitLog(method: method, url: urlString, statusCode: statusCode, start: start, sent: sentBytes, received: data.count, error: nil, requestData: reqBody, responseData: data)
         return data
+    }
+
+    /// Fetches the site root so ServicePipe can set its cookie on this session's
+    /// storage. Concurrent blocked requests share a single warm-up.
+    ///
+    /// The challenge is currently served without JavaScript, so a plain request is
+    /// enough. If that changes, the cookie has to come from a real browser engine
+    /// (WKWebView) — only this method changes, the transport stays as it is.
+    private func warmUpSession() async -> Bool {
+        await warmUp.run { [session, userAgent, weak self] in
+            var request = URLRequest(url: Self.siteURL)
+            request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+
+            let start = CFAbsoluteTimeGetCurrent()
+            do {
+                let (data, response) = try await session.data(for: request)
+                let code = (response as? HTTPURLResponse)?.statusCode
+                let ok = code.map { (200...299).contains($0) } ?? false
+                self?.emitLog(method: "GET", url: Self.siteURL.absoluteString, statusCode: code, start: start, sent: 0, received: data.count, error: ok ? nil : "Session warm-up failed")
+                return ok
+            } catch {
+                self?.emitLog(method: "GET", url: Self.siteURL.absoluteString, statusCode: nil, start: start, sent: 0, received: 0, error: error.localizedDescription)
+                return false
+            }
+        }
     }
 
     /// ServicePipe anti-bot protection answers with HTTP 418 and an HTML challenge

@@ -52,11 +52,13 @@ private func sharedClient() async throws -> ZvukClient {
 }
 
 /// REST endpoints (`/api/tiny/*`, `/api/featured/*`) sit behind ServicePipe
-/// anti-bot protection since October 2026 and answer HTTP 418. The call still
-/// runs; once Zvuk lifts the block the test fails with "known issue was not
-/// recorded" — drop the wrapper then. Any other error fails the test as usual.
+/// anti-bot protection since October 2026. Its mode changes from hour to hour:
+/// sometimes HTTP 418 with an HTML challenge page, sometimes a 307 redirect to
+/// the same URL with an `spid` cookie, which URLSession's cookie jar survives.
+/// The call still runs; `.botDetected` is tolerated, any other error fails the
+/// test as usual. Drop the wrapper once the block has been gone for a while.
 func expectingBotBlock(_ body: () async throws -> Void) async throws {
-    try await withKnownIssue("REST API blocked by anti-bot protection (HTTP 418)") {
+    try await withKnownIssue("REST API blocked by anti-bot protection (HTTP 418)", isIntermittent: true) {
         try await body()
     } matching: { issue in
         if case .botDetected? = issue.error as? ZvukError { return true }
