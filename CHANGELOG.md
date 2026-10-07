@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.2] - 2026-10-07
+
+### Fixed
+
+- Zvuk put ServicePipe anti-bot protection in front of the REST endpoints (`/api/tiny/*`, `/api/featured/info`): every request answers HTTP 418 with an HTML challenge page. These now throw `ZvukError.botDetected` with a short message instead of `.network("Unknown error (418)")`. Any other non-404 error status with an HTML body is mapped the same way. (Ports zvuk-music 0.6.2.)
+- `isAuthorized()` no longer fails with a valid token when the profile endpoint is blocked: it falls back to the GraphQL `userCollection` query and returns `true` when the token is accepted. A rejected token still throws `.unauthorized`.
+- `getAnonymousToken()` throws `.botDetected` on the challenge page instead of a bare `JSONSerialization` error.
+
 ## [0.4.1] - 2026-08-12
 
 ### Fixed

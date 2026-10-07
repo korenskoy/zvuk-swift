@@ -243,6 +243,11 @@ final class Request: @unchecked Sendable {
         let statusCode = httpResponse.statusCode
 
         guard (200...299).contains(statusCode) else {
+            if Self.isBotBlock(statusCode: statusCode, data: data) {
+                let message = "Request blocked by Zvuk anti-bot protection (HTTP \(statusCode))"
+                emitLog(method: method, url: urlString, statusCode: statusCode, start: start, sent: sentBytes, received: data.count, error: message, requestData: reqBody, responseData: data)
+                throw ZvukError.botDetected(message: message)
+            }
             let message = parseErrorMessage(from: data) ?? "Unknown error"
             emitLog(method: method, url: urlString, statusCode: statusCode, start: start, sent: sentBytes, received: data.count, error: message, requestData: reqBody, responseData: data)
             switch statusCode {
@@ -263,6 +268,14 @@ final class Request: @unchecked Sendable {
 
         emitLog(method: method, url: urlString, statusCode: statusCode, start: start, sent: sentBytes, received: data.count, error: nil, requestData: reqBody, responseData: data)
         return data
+    }
+
+    /// ServicePipe anti-bot protection answers with HTTP 418 and an HTML challenge
+    /// page instead of a JSON error. A 404 may legitimately carry an HTML page.
+    static func isBotBlock(statusCode: Int, data: Data) -> Bool {
+        if statusCode == 418 { return true }
+        if statusCode == 404 { return false }
+        return String(decoding: data.prefix(200), as: UTF8.self).lowercased().contains("<html")
     }
 
     private func emitLog(method: String, url: String, statusCode: Int?, start: CFAbsoluteTime, sent: Int, received: Int, error: String?, requestData: Data? = nil, responseData: Data? = nil) {

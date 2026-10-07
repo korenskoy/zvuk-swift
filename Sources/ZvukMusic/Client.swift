@@ -84,8 +84,14 @@ public final class ZvukClient: Sendable {
         }
         request.setValue(APIConstants.defaultUserAgent, forHTTPHeaderField: "User-Agent")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
-        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+        let (data, response) = try await URLSession.shared.data(for: request)
+        if let http = response as? HTTPURLResponse,
+            Request.isBotBlock(statusCode: http.statusCode, data: data)
+        {
+            throw ZvukError.botDetected(
+                message: "Request blocked by Zvuk anti-bot protection (HTTP \(http.statusCode))")
+        }
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
             let result = json["result"] as? [String: Any],
             let token = result["token"] as? String
         else {
@@ -101,9 +107,16 @@ public final class ZvukClient: Sendable {
     }
 
     /// Check if the user is authorized (not anonymous).
+    ///
+    /// When the Tiny API is blocked by anti-bot protection the token is verified
+    /// through GraphQL instead: a rejected token throws ``ZvukError/unauthorized(message:)``.
     public func isAuthorized() async throws -> Bool {
-        let profile = try await getProfile()
-        return profile.isAuthorized
+        do {
+            return try await getProfile().isAuthorized
+        } catch ZvukError.botDetected {
+            _ = try await getCollection()
+            return true
+        }
     }
 
     // MARK: - Search

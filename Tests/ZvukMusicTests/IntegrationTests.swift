@@ -51,6 +51,19 @@ private func sharedClient() async throws -> ZvukClient {
     try await SharedClient.shared.get()
 }
 
+/// REST endpoints (`/api/tiny/*`, `/api/featured/*`) sit behind ServicePipe
+/// anti-bot protection since October 2026 and answer HTTP 418. The call still
+/// runs; once Zvuk lifts the block the test fails with "known issue was not
+/// recorded" — drop the wrapper then. Any other error fails the test as usual.
+func expectingBotBlock(_ body: () async throws -> Void) async throws {
+    try await withKnownIssue("REST API blocked by anti-bot protection (HTTP 418)") {
+        try await body()
+    } matching: { issue in
+        if case .botDetected? = issue.error as? ZvukError { return true }
+        return false
+    }
+}
+
 /// Well-known IDs for testing.
 private enum TestData {
     static let trackId = "131312684"
@@ -92,16 +105,20 @@ private var hasAuthToken: Bool {
 struct AuthTests {
     @Test("Get anonymous token")
     func anonymousToken() async throws {
-        let token = try await ZvukClient.getAnonymousToken()
-        #expect(!token.isEmpty)
-        #expect(token.count > 10)
+        try await expectingBotBlock {
+            let token = try await ZvukClient.getAnonymousToken()
+            #expect(!token.isEmpty)
+            #expect(token.count > 10)
+        }
     }
 
     @Test("Get profile")
     func profile() async throws {
         let client = try await sharedClient()
-        let profile = try await client.getProfile()
-        #expect(profile.result != nil)
+        try await expectingBotBlock {
+            let profile = try await client.getProfile()
+            #expect(profile.result != nil)
+        }
     }
 
     @Test("Check isAuthorized")
@@ -388,7 +405,9 @@ struct MediaTests {
     func getLyrics() async throws {
         let client = try await sharedClient()
         // Just verify it decodes without error — not every track has lyrics
-        _ = try await client.getLyrics(TestData.trackId)
+        try await expectingBotBlock {
+            _ = try await client.getLyrics(TestData.trackId)
+        }
     }
 }
 
@@ -400,16 +419,20 @@ struct EditorialTests {
     func getEditorialPlaylistIds() async throws {
         let client = try await sharedClient()
         // May return empty for anonymous users — just verify no crash
-        _ = try await client.getEditorialPlaylistIds()
+        try await expectingBotBlock {
+            _ = try await client.getEditorialPlaylistIds()
+        }
     }
 
     @Test("Get grid content")
     func getGridContent() async throws {
         let client = try await sharedClient()
-        let page = try await client.getGridContent(name: "editorial_playlist")
-        for item in page.data {
-            #expect(!item.id.isEmpty)
-            #expect(!item.type.isEmpty)
+        try await expectingBotBlock {
+            let page = try await client.getGridContent(name: "editorial_playlist")
+            for item in page.data {
+                #expect(!item.id.isEmpty)
+                #expect(!item.type.isEmpty)
+            }
         }
     }
 }

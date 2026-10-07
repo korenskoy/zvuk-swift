@@ -140,13 +140,17 @@ struct DumpAPIResponses {
         }
 
         // 8) getLyrics
-        try await withCapture(client: client, name: "getLyrics") {
-            _ = try await client.getLyrics(trackId)
+        try await expectingBotBlock {
+            try await withCapture(client: client, name: "getLyrics") {
+                _ = try await client.getLyrics(trackId)
+            }
         }
 
         // 9) getPlaylist — use editorial playlist IDs
-        let editorialIds = try await client.getEditorialPlaylistIds()
-        let playlistId = editorialIds.first ?? "947509"
+        var playlistId = "947509"
+        try await expectingBotBlock {
+            playlistId = try await client.getEditorialPlaylistIds().first ?? playlistId
+        }
 
         try await withCapture(client: client, name: "getPlaylists") {
             _ = try await client.getPlaylist(playlistId)
@@ -173,18 +177,24 @@ struct DumpAPIResponses {
         }
 
         // 14) getEditorialPlaylistIds
-        try await withCapture(client: client, name: "getEditorialPlaylistIds") {
-            _ = try await client.getEditorialPlaylistIds()
+        try await expectingBotBlock {
+            try await withCapture(client: client, name: "getEditorialPlaylistIds") {
+                _ = try await client.getEditorialPlaylistIds()
+            }
         }
 
         // 15) getGridContent
-        try await withCapture(client: client, name: "getGridContent") {
-            _ = try await client.getGridContent(name: "editorial_playlist")
+        try await expectingBotBlock {
+            try await withCapture(client: client, name: "getGridContent") {
+                _ = try await client.getGridContent(name: "editorial_playlist")
+            }
         }
 
         // 16) getProfile
-        try await withCapture(client: client, name: "getProfile") {
-            _ = try await client.getProfile()
+        try await expectingBotBlock {
+            try await withCapture(client: client, name: "getProfile") {
+                _ = try await client.getProfile()
+            }
         }
 
         // Print summary
