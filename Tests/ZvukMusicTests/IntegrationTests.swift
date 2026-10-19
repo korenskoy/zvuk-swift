@@ -376,6 +376,8 @@ struct PlaylistTests {
         #expect(!playlists.isEmpty)
         #expect(playlists[0].id == TestData.playlistId)
         #expect(!playlists[0].title.isEmpty)
+        // Owner tells an own playlist from a liked one; the API must answer the field.
+        #expect(playlists[0].userId?.isEmpty == false)
     }
 
     @Test("Get playlist tracks with pagination")

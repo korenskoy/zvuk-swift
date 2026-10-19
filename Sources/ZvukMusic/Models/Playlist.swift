@@ -15,6 +15,8 @@ public struct PlaylistItem: Codable, Hashable, Sendable {
 public struct SimplePlaylist: Codable, Hashable, Identifiable, Sendable {
     public let id: String
     public let title: String
+    /// Owner. A collection holds both own and liked playlists, and only the owner may delete one.
+    public let userId: String?
     public let isPublic: Bool
     public let description: String?
     public let duration: Int
@@ -23,6 +25,7 @@ public struct SimplePlaylist: Codable, Hashable, Identifiable, Sendable {
     public init(
         id: String = "",
         title: String = "",
+        userId: String? = nil,
         isPublic: Bool = true,
         description: String? = nil,
         duration: Int = 0,
@@ -30,6 +33,7 @@ public struct SimplePlaylist: Codable, Hashable, Identifiable, Sendable {
     ) {
         self.id = id
         self.title = title
+        self.userId = userId
         self.isPublic = isPublic
         self.description = description
         self.duration = duration

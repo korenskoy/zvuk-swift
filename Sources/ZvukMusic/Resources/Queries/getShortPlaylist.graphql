@@ -2,6 +2,7 @@ query getShortPlaylist($ids: [ID!]!) {
   getPlaylists(ids: $ids) {
     id
     title
+    userId
     isPublic
     description
     duration

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.5] - 2026-10-19
+
+### Added
+
+- `SimplePlaylist.userId`, also requested by `getShortPlaylist`. A collection holds own and liked playlists together, and only the owner may delete one, so a caller needs the owner to tell a deletion from an unlike.
+
 ## [0.4.4] - 2026-10-19
 
 ### Fixed
