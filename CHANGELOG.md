@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.4] - 2026-10-19
+
+### Fixed
+
+- A blocked request now waits before each replay (2s, 10s, 30s) instead of being replayed immediately. Probing a live block showed it lasting about half a minute, so a shorter ladder never outlasted it. Live logs show the same URL answering 200 and 418 in turns, so the block is a rate limit on the edge rather than a verdict on the client, and an instant replay just hit the same limit. The session warm-up still runs once, before the first wait; an endpoint that stays blocked throws `.botDetected` after the last delay.
+- `getDirectStreamURL` no longer waits out a block: the caller falls back to the GraphQL stream URL, which the edge does not touch, so retrying only delayed playback by the length of the ladder. Other callers can opt out the same way via `retryOnBlock: false`.
+
 ## [0.4.3] - 2026-10-07
 
 ### Added

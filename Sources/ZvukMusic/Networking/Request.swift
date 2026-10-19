@@ -58,6 +58,12 @@ final class Request: @unchecked Sendable {
 
     static let siteURL = URL(string: "https://zvuk.com/")!
     static let siteHost = "zvuk.com"
+
+    /// Pauses before each replay of a request the anti-bot edge blocked. Probing showed
+    /// the block lasting tens of seconds, so the ladder has to outlast it to be of any use.
+    /// ponytail: three numbers, not a backoff policy object.
+    /// A `var` only so tests can shorten the ladder; nothing in the library writes it.
+    nonisolated(unsafe) static var botRetryDelays: [Double] = [2, 10, 30]
     private var _onLog: (@Sendable (NetworkLogEntry) -> Void)?
 
     /// Read by in-flight requests on background executors, set from any thread —
@@ -80,7 +86,8 @@ final class Request: @unchecked Sendable {
         timeout: TimeInterval = APIConstants.defaultTimeout,
         proxyURL: String? = nil,
         userAgent: String? = nil,
-        throttler: Throttler? = nil
+        throttler: Throttler? = nil,
+        protocolClasses: [AnyClass]? = nil
     ) {
         self.userAgent = userAgent ?? APIConstants.defaultUserAgent
         self.throttler = throttler
@@ -104,6 +111,9 @@ final class Request: @unchecked Sendable {
                 kCFNetworkProxiesHTTPSProxy: host,
                 kCFNetworkProxiesHTTPSPort: port,
             ]
+        }
+        if let protocolClasses {
+            config.protocolClasses = protocolClasses
         }
         self.session = URLSession(configuration: config)
     }
@@ -157,7 +167,9 @@ final class Request: @unchecked Sendable {
     // MARK: - REST
 
     /// GET request returning parsed JSON.
-    func get(url: String, params: [String: String]? = nil) async throws -> [String: Any]? {
+    /// - Parameter retryOnBlock: pass `false` when the caller has a faster alternative
+    ///   for a blocked endpoint — waiting out the block would only delay it.
+    func get(url: String, params: [String: String]? = nil, retryOnBlock: Bool = true) async throws -> [String: Any]? {
         if let throttler {
             await throttler.acquire()
         }
@@ -176,7 +188,7 @@ final class Request: @unchecked Sendable {
         request.httpMethod = "GET"
         applyHeaders(to: &request)
 
-        let responseData = try await performRequest(request)
+        let responseData = try await performRequest(request, attempt: retryOnBlock ? 0 : Self.botRetryDelays.count)
         let parsed = try parseResponse(responseData)
 
         // Tiny API: {"result": {...}} — unwrap
@@ -234,7 +246,7 @@ final class Request: @unchecked Sendable {
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
     }
 
-    private func performRequest(_ request: URLRequest, retrying: Bool = false) async throws -> Data {
+    private func performRequest(_ request: URLRequest, attempt: Int = 0) async throws -> Data {
         let start = CFAbsoluteTimeGetCurrent()
         let method = request.httpMethod ?? "GET"
         let urlString = request.url?.absoluteString ?? "?"
@@ -264,11 +276,16 @@ final class Request: @unchecked Sendable {
             if Self.isBotBlock(statusCode: statusCode, data: data) {
                 let message = "Request blocked by Zvuk anti-bot protection (HTTP \(statusCode))"
                 emitLog(method: method, url: urlString, statusCode: statusCode, start: start, sent: sentBytes, received: data.count, error: message, requestData: reqBody, responseData: data)
-                // ServicePipe lets the API through once the session carries the cookie a
-                // normal page visit sets. Warm up once and replay the request exactly once;
-                // a still-blocked retry falls through and throws.
-                if !retrying, request.url?.host == Self.siteHost, await warmUpSession() {
-                    return try await performRequest(request, retrying: true)
+                // The same URL answers 200 and 418 in turns, so the block is a rate limit
+                // on the edge rather than a verdict on the client: waiting helps, replaying
+                // at once does not. The cookie warm-up is cheap, so it still runs — once,
+                // before the first wait.
+                if attempt < Self.botRetryDelays.count, request.url?.host == Self.siteHost {
+                    if attempt == 0 {
+                        _ = await warmUpSession()
+                    }
+                    try await Task.sleep(for: .seconds(Self.botRetryDelays[attempt]))
+                    return try await performRequest(request, attempt: attempt + 1)
                 }
                 throw ZvukError.botDetected(message: message)
             }

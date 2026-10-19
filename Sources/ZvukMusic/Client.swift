@@ -375,9 +375,12 @@ public final class ZvukClient: Sendable {
         _ trackId: String,
         quality: StreamQuality = .high
     ) async throws -> DirectStream? {
+        // Waiting out a block here would stall playback: the caller falls back to the
+        // GraphQL stream URL, which the anti-bot edge does not touch.
         let result = try await request.get(
             url: "\(APIConstants.tinyAPIURL)/track/stream",
-            params: ["id": trackId, "quality": quality.rawValue]
+            params: ["id": trackId, "quality": quality.rawValue],
+            retryOnBlock: false
         )
         guard let result, let streamURL = result["stream"] as? String else { return nil }
         return DirectStream(stream: streamURL, quality: quality.rawValue)
