@@ -8,7 +8,7 @@ enum APIConstants {
     static let apiURL = "https://zvuk.com/api/v1/graphql"
     static let tinyAPIURL = "https://zvuk.com/api/tiny"
     static let defaultUserAgent =
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
     static let defaultTimeout: TimeInterval = 10.0
     static let defaultHeaders: [String: String] = [
         "Accept": "application/json, text/plain, */*",
@@ -52,6 +52,7 @@ final class Request: @unchecked Sendable {
     private let session: URLSession
     private var headers: [String: String]
     private let userAgent: String
+    private let mobileProfile: MobileClientProfile?
     private let throttler: Throttler?
     private let warmUp = WarmUpCoordinator()
     private let lock = NSLock()
@@ -86,10 +87,12 @@ final class Request: @unchecked Sendable {
         timeout: TimeInterval = APIConstants.defaultTimeout,
         proxyURL: String? = nil,
         userAgent: String? = nil,
+        mobileProfile: MobileClientProfile? = nil,
         throttler: Throttler? = nil,
         protocolClasses: [AnyClass]? = nil
     ) {
         self.userAgent = userAgent ?? APIConstants.defaultUserAgent
+        self.mobileProfile = mobileProfile
         self.throttler = throttler
 
         var headers = APIConstants.defaultHeaders
@@ -244,6 +247,19 @@ final class Request: @unchecked Sendable {
             request.setValue(value, forHTTPHeaderField: key)
         }
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+
+        // The profile replaces User-Agent and Referer, and adds the session headers.
+        // `X-Session-UID` covers the timestamp, so it is recomputed per request.
+        if let mobileProfile {
+            let headers = mobileProfile.headers(
+                timestamp: Int(Date().timeIntervalSince1970), referer: Self.siteURL.absoluteString
+            )
+            for (key, value) in headers {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+            // Origin is a browser-only header and does not belong to this profile.
+            request.setValue(nil, forHTTPHeaderField: "Origin")
+        }
     }
 
     private func performRequest(_ request: URLRequest, attempt: Int = 0) async throws -> Data {

@@ -40,6 +40,7 @@ public final class ZvukClient: Sendable {
         timeout: TimeInterval = 10.0,
         proxyURL: String? = nil,
         userAgent: String? = nil,
+        mobileProfile: MobileClientProfile? = nil,
         rateLimit: Int? = nil
     ) {
         self.token = token
@@ -54,6 +55,7 @@ public final class ZvukClient: Sendable {
             timeout: timeout,
             proxyURL: proxyURL,
             userAgent: userAgent,
+            mobileProfile: mobileProfile,
             throttler: throttler
         )
     }

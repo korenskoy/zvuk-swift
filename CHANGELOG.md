@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.6] - 2026-10-20
+
+### Added
+
+- `MobileClientProfile`: an alternative client identity — a mobile-shaped User-Agent plus `X-Timestamp`, `X-App-Instance` and a computed `X-Session-UID`. Opt in through `ZvukClient(mobileProfile:)`; left out, a request carries the browser headers as before. The UID is a checksum of client parameters (SHA-256 of `instanceId + timestamp + userAgent`, rendered as uppercase hex, raw-DEFLATEd, XORed over its leading bytes with the instance id, Base64-encoded), not a signature over the request. Whether the edge treats such requests differently is not proven: with no block in effect both profiles answered 200, and a comparison under a live block has not been possible yet.
+
+### Changed
+
+- Default User-Agent moved to Chrome 155.
+
 ## [0.4.5] - 2026-10-19
 
 ### Added
