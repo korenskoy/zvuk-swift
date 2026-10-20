@@ -1,0 +1,7 @@
+mutation removeTracksFromPlaylist($id: ID!, $items: [PlaylistItem!]!) {
+  playlist {
+    removeItemsV1(id: $id, items: $items) {
+      id
+    }
+  }
+}

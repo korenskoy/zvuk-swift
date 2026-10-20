@@ -380,6 +380,45 @@ struct PlaylistTests {
         #expect(playlists[0].userId?.isEmpty == false)
     }
 
+    @Test("Get related tracks")
+    func getRelatedTracks() async throws {
+        let client = try await sharedClient()
+        let tracks = try await client.getPlaylistTracks(TestData.playlistId, limit: 1, offset: 0)
+        guard let seed = tracks.first else { return }
+        let related = try await client.getRelatedTracks(seed.id, limit: 5)
+        #expect(!related.isEmpty)
+        for track in related {
+            #expect(!track.id.isEmpty)
+            #expect(!track.title.isEmpty)
+            // A recommendation of the same track back would make the feature pointless.
+            #expect(track.id != seed.id)
+        }
+    }
+
+    /// Adds a track to a scratch playlist, then removes it again, so the account is left as it was.
+    @Test("Add and remove playlist tracks")
+    func addAndRemovePlaylistTracks() async throws {
+        let client = try await sharedClient()
+        let tracks = try await client.getPlaylistTracks(TestData.playlistId, limit: 1, offset: 0)
+        guard let track = tracks.first else { return }
+
+        let playlistId = try await client.createPlaylist("yamp test \(UUID().uuidString.prefix(8))")
+
+        // Все вызовы идут до проверок, а уборка — сразу после них: `defer { Task { … } }`
+        // не дожидается удаления и оставляет мусор в аккаунте.
+        let added = try await client.addTracksToPlaylist(playlistId, trackIds: [track.id])
+        let afterAdd = try await client.getPlaylistTracks(playlistId, limit: 10, offset: 0)
+        let removed = try await client.removeTracksFromPlaylist(playlistId, trackIds: [track.id])
+        let afterRemove = try await client.getPlaylistTracks(playlistId, limit: 10, offset: 0)
+        let deleted = try await client.deletePlaylist(playlistId)
+
+        #expect(added)
+        #expect(afterAdd.contains { $0.id == track.id })
+        #expect(removed)
+        #expect(!afterRemove.contains { $0.id == track.id })
+        #expect(deleted)
+    }
+
     @Test("Get playlist tracks with pagination")
     func getPlaylistTracks() async throws {
         let client = try await sharedClient()

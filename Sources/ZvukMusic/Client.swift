@@ -579,6 +579,30 @@ public final class ZvukClient: Sendable {
         return playlist["addItems"] != nil
     }
 
+    /// Remove tracks from a playlist.
+    public func removeTracksFromPlaylist(_ playlistId: String, trackIds: [String]) async throws -> Bool {
+        let gql = try GraphQLLoader.loadQuery("removeTracksFromPlaylist")
+        let items = Self.playlistItems(trackIds)
+        let result = try await request.graphql(
+            query: gql,
+            operationName: "removeTracksFromPlaylist",
+            variables: ["id": playlistId, "items": items]
+        )
+        let playlist = result["playlist"] as? [String: Any] ?? [:]
+        return playlist["removeItemsV1"] != nil
+    }
+
+    /// Tracks similar to the given one, as the service recommends them.
+    public func getRelatedTracks(_ trackId: String, limit: Int = 10) async throws -> [SimpleTrack] {
+        let gql = try GraphQLLoader.loadQuery("getRelatedTracks")
+        let result = try await request.graphql(
+            query: gql,
+            operationName: "getRelatedTracks",
+            variables: ["id": trackId, "limit": limit]
+        )
+        return try decodeList(SimpleTrack.self, from: result["relatedTracks"])
+    }
+
     /// Update a playlist entirely.
     /// - Parameters:
     ///   - name: New name; defaults to the playlist's current name.

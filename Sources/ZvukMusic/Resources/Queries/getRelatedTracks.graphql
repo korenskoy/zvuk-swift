@@ -1,0 +1,32 @@
+query getRelatedTracks($id: ID!, $limit: Int = 10) {
+  relatedTracks(track_id: $id, limit: $limit) {
+    id
+    title
+    duration
+    explicit
+    artists {
+      id
+      title
+      image {
+        src
+      }
+    }
+    release {
+      id
+      title
+      date
+      type
+      image {
+        src
+      }
+      explicit
+      artists {
+        id
+        title
+        image {
+          src
+        }
+      }
+    }
+  }
+}

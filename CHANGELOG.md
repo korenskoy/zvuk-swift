@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.7] - 2026-10-20
+
+### Added
+
+- `getRelatedTracks(_:limit:)`: tracks the service considers similar to a given one. Related items existed for artists, releases, playlists and podcasts, but not for a single track.
+- `removeTracksFromPlaylist(_:trackIds:)`: the counterpart to `addTracksToPlaylist`, which had no way back.
+
 ## [0.4.6] - 2026-10-20
 
 ### Added
